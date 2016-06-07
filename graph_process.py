@@ -1,4 +1,5 @@
 from fsm_to_graph import *
+import networkx
 
 # process the graph
 
@@ -84,9 +85,12 @@ for scc in sccs:
 
         scc.graph["replaceable_graphs"].append(rg)
 
+
+
 # create simplified graphs
 def create_simplified_graphs(g, sccs, scc_index, simplified_graph, simplified_graphs):
-    for replaceable_graph in sccs[scc_index].graph["replaceable_graphs"]:
+    scc = sccs[scc_index]
+    for replaceable_graph in scc.graph["replaceable_graphs"]:
         sg = networkx.DiGraph(simplified_graph)
         if len(replaceable_graph.edges())==0:
             sg.add_nodes_from(replaceable_graph.nodes())
@@ -116,23 +120,19 @@ def add_dag_edges(g, simplified_graphs, dag_edges):
 def check_fsm_usability(simplified_graphs):
     new_simplified_graphs = []
     for simplified_graph in simplified_graphs:
-        usable = True
-        if simplified_graph.graph["initial"] not in simplified_graph.nodes():
-            usable = False
         for final in simplified_graph.graph["finals"]:
-            if final not in simplified_graph.nodes():
-                usable = False
+            try:
+                networkx.shortest_path(simplified_graph, simplified_graph.graph["initial"], final)
+                new_simplified_graphs.append(simplified_graph)
                 break
-
-        if usable:
-            new_simplified_graphs.append(simplified_graph)
+            except Exception as e: # no nodes or no path between nodes
+                print e
 
     return new_simplified_graphs
 
 simplified_graphs = []
 sg = networkx.DiGraph(alphabet=g.graph["alphabet"], initial=g.graph["initial"], finals=g.graph["finals"])
 
-import pdb;pdb.set_trace()
 create_simplified_graphs(g, sccs, 0, sg, simplified_graphs)
 add_dag_edges(g, simplified_graphs, dag_edges)
 simplified_graphs = check_fsm_usability(simplified_graphs)
