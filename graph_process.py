@@ -72,21 +72,21 @@ def find_shortest_paths(scc, scc_index):
     for inward_node in scc.graph["inward_nodes"]:
         for outward_node in scc.graph["outward_nodes"]:
             scc.node[inward_node].setdefault("scc_paths", {})
-            scc.node[inward_node]["scc_paths"][outward_node] = shortest_paths[scc_index][inward_node][outward_node]
+            scc.node[inward_node]["scc_paths"][outward_node] = [shortest_paths[scc_index][inward_node][outward_node]]
     return
 
 
-def complete_saleman_path(scc, scc_index, p, rns):
+def complete_saleman_path(scc, scc_index, p, rns, outward_node):
     _path = list(p)
     rest_nodes = rns
 
     # for now, simply complete the nodes in order......
     while True:
-        if len(rns)==0:
+        if len(rest_nodes)==0:
             break
         node = rest_nodes[0]
         _path = _path + shortest_paths[scc_index][_path[-1]][node]
-        rest_nodes = [node for node in scc.nodes() if (node not in _path) or (node!=outward_node)]
+        rest_nodes = [node for node in scc.nodes() if (node not in _path) and (node!=outward_node)]
 
     #rest_nodes = [node for node in scc.nodes() if node not in _path]
 
@@ -107,18 +107,42 @@ def find_fake_saleman_paths(scc, scc_index):
 
             _path = shortest_paths[scc_index][inward_node][_eindex] if _eindex!=inward_node else [inward_node]
             rest_nodes = [node for node in scc.nodes() if (node not in _path) or (node!=outward_node)]
-            _path = complete_saleman_path(scc, scc_index, _path, rest_nodes)
+            _path = complete_saleman_path(scc, scc_index, _path, rest_nodes, outward_node)
             _path = _path + shortest_paths[scc_index][_path[-1]][outward_node]
 
             scc.node[inward_node].setdefault("scc_paths", {})
-            scc.node[inward_node]["scc_paths"][outward_node] = _path
+            scc.node[inward_node]["scc_paths"][outward_node] = [_path]
+
+    return
+
+def radiation_and_pack_paths(scc, scc_index):
+    for inward_node in scc.graph["inward_nodes"]:
+        for outward_node in scc.graph["outward_nodes"]:
+            innodes = [node for node in scc.nodes() if node!=inward_node and node!=outward_node]
+            scc.node[inward_node].setdefault("scc_paths", {})
+            scc.node[inward_node]["scc_paths"][outward_node] = [[inward_node, outward_node]] if len(innodes)==0 and inward_node!=outward_node else [[inward_node]]
+            for innode in innodes:
+                scc.node[inward_node]["scc_paths"][outward_node].append(shortest_paths[scc_index][inward_node][innode][:-1] + shortest_paths[scc_index][innode][outward_node])
+
+            repeated_paths = []
+            _len = len(scc.node[inward_node]["scc_paths"][outward_node])
+            for i in range(0, _len):
+                for j in range(i+1, _len):
+                    if scc.node[inward_node]["scc_paths"][outward_node][i]==scc.node[inward_node]["scc_paths"][outward_node][j]:
+                        repeated_paths.append(i)
+                        break
+
+            scc.node[inward_node]["scc_paths"][outward_node] = [scc.node[inward_node]["scc_paths"][outward_node][i] for i in range(0, _len) if i not in repeated_paths]
 
     return
 
 
 i = 0
 for scc in sccs:
-    find_shortest_paths(scc, i)
+    #find_shortest_paths(sccs[i], i)
+    #find_fake_saleman_paths(sccs[i], i)
+    radiation_and_pack_paths(sccs[i], i)
+
     i = i + 1
 
 
