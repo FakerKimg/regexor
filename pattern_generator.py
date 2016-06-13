@@ -4,37 +4,6 @@ f = open("debugging.mail", "w")
 
 
 
-def find_shortest_paths_pairs(scc):
-    shortest_paths = []
-    for inward_node in scc.graph["inward_nodes"]:
-        for outward_node in scc.graph["outward_nodes"]:
-            shortest_paths.append(networkx.shortest_path(scc, inward_node, outward_node))
-
-    return shortest_paths
-
-# find the longest shortest path from source, then find the shortest path to rest nodes
-def find_fake_saleman_paths(scc):
-    shortest_paths = networkx.shortest_path(scc)
-
-    paths = []
-    for inward_node in scc.graph["inward_nodes"]:
-        for outward_node in scc.graph["outward_nodes"]:
-            _max = 0
-            _eindex = -1
-            for eindex, path in shortest_paths[inward_node]:
-                _max = len(path) if _max < len(path) else _max
-                _eindex = eindex if _max < len(path) else _eindex
-
-            
-
-    return paths
-
-
-
-
-
-#else_chars = [chr(i) for i in range(0, 256) if chr(i) not in g.graph["alphabet"]] # assume the alphabet is all ascii, anything_else represents all ascii except those in alphabet of regex(fsm)
-#else_chars = [c for c in string.printable if chr(i) not in g.graph["alphabet"]]
 else_chars = [c for c in string.printable[:-6] if chr(i) not in g.graph["alphabet"]]
 
 def extract_edge_input(edge):
@@ -58,9 +27,6 @@ def extract_edge_input(edge):
 
 
 for scc in sccs:
-    paths = find_shortest_paths_pairs(scc)
-
-    scc.graph["paths"] = paths
     for path in paths:
         pattern_str = ""
         for i in range(0, len(path)-1):

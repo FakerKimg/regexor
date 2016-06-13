@@ -29,28 +29,32 @@ for scc in sccs:
     scc.graph["inward_nodes"] = set()
     scc.graph["outward_nodes"] = set()
 
-# add initial state and final states
+# add inward and outward nodes
+for edge in dag_edges:
+    scc_index = g.node[edge[0]]["scc_index"]
+    scc = sccs[scc_index]
+    scc.node[edge[0]].setdefault("outward_edges", [])
+    scc.node[edge[0]]["outward_edges"].append(edge)
+    scc.graph["outward_nodes"].add(edge[0])
+
+    scc_index = g.node[edge[1]]["scc_index"]
+    scc = sccs[scc_index]
+    scc.node[edge[1]].setdefault("inward_edges", [])
+    scc.node[edge[1]]["inward_edges"].append(edge)
+    scc.graph["inward_nodes"].add(edge[1])
+
+# initial must be add to inward nodes, add final states if the final state node not outward node
 initial_index = g.graph["initial"]
 sccs[g.node[initial_index]["scc_index"]].graph["inward_nodes"].add(initial_index)
 sccs[g.node[initial_index]["scc_index"]].node[initial_index].setdefault("inward_edges", [])
 
 final_indexes = g.graph["finals"]
 for final_index in final_indexes:
-    sccs[g.node[final_index]["scc_index"]].graph["outward_nodes"].add(final_index)
-    sccs[g.node[final_index]["scc_index"]].node[final_index].setdefault("outward_edges", [])
+    scc_index = g.node[final_index]["scc_index"]
+    scc = sccs[scc_index]
+    scc.graph["outward_nodes"].add(final_index)
+    scc.node[final_index].setdefault("outward_edges", [])
 
-# add other inward and outward nodes
-for edge in dag_edges:
-    for scc in sccs:
-        if edge[0] in scc.nodes():
-            scc.node[edge[0]].setdefault("outward_edges", [])
-            scc.node[edge[0]]["outward_edges"].append(edge)
-            scc.graph["outward_nodes"].add(edge[0])
-
-        if edge[1] in scc.nodes():
-            scc.node[edge[1]].setdefault("inward_edges", [])
-            scc.node[edge[1]]["inward_edges"].append(edge)
-            scc.graph["inward_nodes"].add(edge[1])
 
 # it's easier to operate on list ???
 for scc in sccs:
@@ -112,9 +116,10 @@ def find_fake_saleman_paths(scc, scc_index):
     return
 
 
-
-
-
+i = 0
+for scc in sccs:
+    find_shortest_paths(scc, i)
+    i = i + 1
 
 
 
