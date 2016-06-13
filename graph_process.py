@@ -72,7 +72,7 @@ def find_shortest_paths(scc, scc_index):
     for inward_node in scc.graph["inward_nodes"]:
         for outward_node in scc.graph["outward_nodes"]:
             scc.node[inward_node].setdefault("scc_paths", {})
-            scc.node[inward_node]["scc_paths"][outward_node] = shortest_path[scc_index][inward_node][outward_node]
+            scc.node[inward_node]["scc_paths"][outward_node] = shortest_paths[scc_index][inward_node][outward_node]
     return
 
 
@@ -85,7 +85,7 @@ def complete_saleman_path(scc, scc_index, p, rns):
         if len(rns)==0:
             break
         node = rest_nodes[0]
-        _path = _path + shortest_path[scc_index][_path[-1]][node]
+        _path = _path + shortest_paths[scc_index][_path[-1]][node]
         rest_nodes = [node for node in scc.nodes() if (node not in _path) or (node!=outward_node)]
 
     #rest_nodes = [node for node in scc.nodes() if node not in _path]
@@ -99,16 +99,16 @@ def find_fake_saleman_paths(scc, scc_index):
             scc.node[inward_node].setdefault("scc_paths", {})
             _max = 0
             _eindex = inward_node
-            for eindex, path in shortest_path[scc_index][inward_node].iteritems():
+            for eindex, path in shortest_paths[scc_index][inward_node].iteritems():
                 if eindex==outward_node:
                     continue
-                _max = len(path) if _max < len(path) else _max
                 _eindex = eindex if _max < len(path) else _eindex
+                _max = len(path) if _max < len(path) else _max
 
-            _path = shortest_path[scc_index][inward_node][_eindex] if _eindex!=inward_node else [inward_node]
+            _path = shortest_paths[scc_index][inward_node][_eindex] if _eindex!=inward_node else [inward_node]
             rest_nodes = [node for node in scc.nodes() if (node not in _path) or (node!=outward_node)]
             _path = complete_saleman_path(scc, scc_index, _path, rest_nodes)
-            _path = _path + shortest_path[scc_index][_path[-1]][outward_node]
+            _path = _path + shortest_paths[scc_index][_path[-1]][outward_node]
 
             scc.node[inward_node].setdefault("scc_paths", {})
             scc.node[inward_node]["scc_paths"][outward_node] = _path

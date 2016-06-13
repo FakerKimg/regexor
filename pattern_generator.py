@@ -9,21 +9,15 @@ else_chars = [c for c in string.printable[:-6] if chr(i) not in g.graph["alphabe
 def extract_edge_input(edge):
     _inputs = g.edge[edge[0]][edge[1]]["_inputs"]
 
-    pattern_str = "["
+    possible_inputs = ""
     for _input in _inputs:
         if _input==anything_else:
             for c in else_chars:
-                if c in "-[]\\^":
-                    pattern_str  = pattern_str + "\\" + c
-                    continue
-                pattern_str = pattern_str + c
-        elif _input in "-[]\\^":
-            pattern_str  = pattern_str + "\\" + _input
-        else:
-            pattern_str = pattern_str + _input
-    pattern_str = pattern_str + "]"
+                possible_inputs = possible_inputs + c
+            continue
+        possible_inputs = possible_inputs + _input
 
-    return pattern_str
+    return possible_inputs
 
 
 for scc in sccs:
@@ -42,8 +36,14 @@ for scc in sccs:
             #scc.node[path[0]]["patterns"][path[-1]] = pattern_str
 
 
-def iterate_scc(dp, f, scc, inward_node, _pattern, output_patterns=[]):
-    temp_dp = list(dp)
+
+
+
+
+def iterate_scc(scc, inward_node, _output, _outputs=[]):
+    for eindex, scc_path in scc.node[inward_node]["scc_paths"].iteritems():
+
+
     _patterns = scc.node[inward_node]["patterns"]
     for eindex, scc_pattern in _patterns.iteritems():
         new_pattern = None
