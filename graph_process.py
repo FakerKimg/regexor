@@ -139,9 +139,9 @@ def radiation_and_pack_paths(scc, scc_index):
 
 i = 0
 for scc in sccs:
-    #find_shortest_paths(sccs[i], i)
+    find_shortest_paths(sccs[i], i)
     #find_fake_saleman_paths(sccs[i], i)
-    radiation_and_pack_paths(sccs[i], i)
+    #radiation_and_pack_paths(sccs[i], i)
 
     i = i + 1
 

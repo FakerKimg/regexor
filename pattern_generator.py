@@ -4,7 +4,7 @@ from graph_process import *
 
 else_chars = [c for c in string.printable[:-6] if chr(i) not in g.graph["alphabet"]]
 
-def extract_edge_input(edge):
+def extract_edge_inputs(edge):
     _inputs = g.edge[edge[0]][edge[1]]["_inputs"]
 
     possible_inputs = ""
@@ -45,4 +45,22 @@ initial = g.graph["initial"]
 output_paths = iterate_scc(sccs[g.node[initial]["scc_index"]], initial, [])
 
 
+def iterate_output(wf, output_path, pindex, output_str=""):
+    if pindex==len(output_path)-1:
+        wf.write(output_str)
+        wf.write("\n")
+        return
+
+    possible_inputs = extract_edge_inputs((output_path[0], output_path[1]))
+    for _input in possible_inputs:
+        iterate_output(wf, output_path, pindex+1, output_str+_input)
+
+    return
+
+
+with open("email.pattern", "w") as wf:
+    for output_path in output_paths:
+        iterate_output(wf, output_path, 0, "")
+
+    wf.close()
 
