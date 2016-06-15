@@ -1,7 +1,6 @@
 from fsm_to_graph import *
 import networkx
 from regexfsm.lego import *
-import string
 
 # process the graph
 

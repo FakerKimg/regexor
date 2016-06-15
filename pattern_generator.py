@@ -1,6 +1,5 @@
 from graph_process import *
-
-
+import string
 
 else_chars = [c for c in string.printable[:-6] if chr(i) not in g.graph["alphabet"]]
 

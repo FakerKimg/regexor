@@ -3,10 +3,6 @@ from regexfsm.fsm import anything_else
 import json
 import networkx
 
-f = open("email_valid_fsm", "r")
-m_json = f.readline()
-f.close()
-
 f = open("valid_fsms", "r")
 fsm_json = f.readline()
 f.close()
@@ -33,8 +29,8 @@ for sstate, edges in fsm_dict["map"].iteritems():
         else:
             cpmap[sindex][_input.encode("utf-8")] = eindex
 
-negative_fsm = fsm(alphabet=set(cpalphabet), states=set(fsm_dict["states"]), initial=fsm_dict["initial"], finals=set(fsm_dict["finals"]), map=cpmap)
-
+valid_fsm = fsm(alphabet=set(cpalphabet), states=set(fsm_dict["states"]), initial=fsm_dict["initial"], finals=set(fsm_dict["finals"]), map=cpmap)
+negative_fsm = valid_fsm.everythingbut()
 
 
 g = networkx.DiGraph(initial=fsm_dict["initial"], finals=fsm_dict["finals"], alphabet=cpalphabet)
