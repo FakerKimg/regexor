@@ -7,8 +7,14 @@ f = open("email_valid_fsm", "r")
 m_json = f.readline()
 f.close()
 
-fsm_dict = json.loads(m_json)
-#fsm_dict = m_json.decode('unicode-escape').encode('utf8')
+f = open("valid_fsms", "r")
+fsm_json = f.readline()
+f.close()
+
+
+
+fsm_dict = json.loads(fsm_json)
+fsm_dict = fsm_dict["email"]
 
 # copy alphabet
 cpalphabet = [ s.encode("utf-8") for s in fsm_dict["alphabet"] ]
