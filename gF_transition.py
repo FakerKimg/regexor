@@ -1,13 +1,16 @@
 from regexfsm.fsm import *
 from FAdo.fa import *
 import string
-
+from regexfsm.fsm import anything_else
+from regexfsm.fsm import anything_else_cls
 
 def greenfsm_to_FDFA(gfsm):
     dfa = DFA()
 
     # use string.printable as alphabet
     dfa.addSigma(string.printable[:-6])
+    #else_chars = [c for c in string.printable[:-6] if c not in g.graph["alphabet"]]
+    else_chars = [c for c in string.printable if c not in gfsm.__dict__["alphabet"]]
 
     # add states
     states_mapping = {}
@@ -24,7 +27,11 @@ def greenfsm_to_FDFA(gfsm):
     # add transitions
     for sindex, transition in gfsm.__dict__["map"].iteritems():
         for _input, eindex in transition.iteritems():
-            dfa.addTransition(states_mapping[sindex], _input, states_mapping[eindex])
+            if isinstance(_input, anything_else_cls):
+                for else_input in else_chars:
+                    dfa.addTransition(states_mapping[sindex], else_input, states_mapping[eindex])
+            else:
+                dfa.addTransition(states_mapping[sindex], _input, states_mapping[eindex])
 
     return dfa
 
@@ -47,9 +54,9 @@ def iterate_Fregex(Fregex):
         arg2 = iterate_Fregex(Fregex.arg2)
         if not arg1 and not arg2:
             return None
-        elif not arg1:
+        elif not arg1 or arg1=="":
             return arg2
-        elif not arg2:
+        elif not arg2 or arg2=="":
             return arg1
         return "(" + arg1 + "|" + arg2  + ")"
     elif isinstance(Fregex, star):
@@ -57,7 +64,10 @@ def iterate_Fregex(Fregex):
         if not arg:
             return None
         return arg + "*"
-    else: # epsilon or emptyset ?????
+    elif isinstance(Fregex, epsilon):
+        return ""
+    else: # emptyset ?????
+        print Fregex
         pass
 
     return None

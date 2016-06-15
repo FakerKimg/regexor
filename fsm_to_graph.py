@@ -3,7 +3,7 @@ from regexfsm.fsm import anything_else
 import json
 import networkx
 
-f = open("valid_fsms", "r")
+f = open("valid.fsms", "r")
 fsm_json = f.readline()
 f.close()
 
