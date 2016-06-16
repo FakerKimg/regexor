@@ -18,7 +18,7 @@ mapping = {
     "color": "#[0-9a-fA-F]{6}",
 }
 
-"""
+
 with open("valid.fsms", "w") as fsmf:
     fsm_dict = {}
     for _type, _regex in mapping.iteritems():
@@ -51,10 +51,10 @@ with open("valid.fsms", "w") as fsmf:
     fsm_json = json.dumps(fsm_dict)
     fsmf.write(fsm_json)
     fsmf.close()
+
+
+
 """
-
-
-
 fsm_dict = {}
 for _type, _regex in mapping.iteritems():
     if _regex == "":
@@ -84,4 +84,5 @@ for _type, _regex in mapping.iteritems():
         del edges[anything_else]
 
 print fsm_dict
+"""
 
