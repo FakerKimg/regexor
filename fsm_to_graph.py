@@ -10,7 +10,7 @@ f.close()
 
 
 fsm_dict = json.loads(fsm_json)
-fsm_dict = fsm_dict["url"]
+fsm_dict = fsm_dict["email"]
 
 # copy alphabet
 cpalphabet = [ s.encode("utf-8") for s in fsm_dict["alphabet"] ]
