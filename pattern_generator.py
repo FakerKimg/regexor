@@ -44,7 +44,7 @@ def iterate_dag_edges(scc, outward_node, _path, _paths):
 initial = g.graph["initial"]
 output_paths = iterate_scc(sccs[g.node[initial]["scc_index"]], initial, [])
 
-
+"""
 def iterate_output(wf, output_path, pindex, output_str=""):
     if pindex==len(output_path)-1:
         wf.write(output_str)
@@ -58,9 +58,10 @@ def iterate_output(wf, output_path, pindex, output_str=""):
     return
 
 
-with open("email.pattern", "w") as wf:
+with open("email.shortest.pattern", "w") as wf:
     for output_path in output_paths:
-        iterate_output(wf, output_path, 0, "")
+        wf.write(str(output_path) + "\n")
+        #iterate_output(wf, output_path, 0, "")
 
     wf.close()
-
+"""
