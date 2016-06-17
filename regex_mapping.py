@@ -18,8 +18,9 @@ mapping = {
     "color": "#[0-9a-fA-F]{6}",
 }
 
-with open("valid.fsms", "w") as fsmf:
-    fsm_dict = {}
+with open("parsed.fsms", "w") as fsmf:
+    valid_dict = {}
+    invalid_dict = {}
     for _type, _regex in mapping.iteritems():
         if _regex == "":
             continue
@@ -30,25 +31,48 @@ with open("valid.fsms", "w") as fsmf:
             print "error while transition to fsm"
             continue
 
-        fsm_dict[_type] = {}
+        valid_dict[_type] = {}
         for key, value in _fsm.__dict__.iteritems():
             v = value
             if type(value) == set:
                 v = list(v)
-            fsm_dict[_type][key] = v
+            valid_dict[_type][key] = v
 
-        if anything_else in fsm_dict[_type]["alphabet"]:
-            fsm_dict[_type]["alphabet"].remove(anything_else)
-            fsm_dict[_type]["alphabet"].append("anything_else")
+        if anything_else in valid_dict[_type]["alphabet"]:
+            valid_dict[_type]["alphabet"].remove(anything_else)
+            valid_dict[_type]["alphabet"].append("anything_else")
 
-        for snode, edges in fsm_dict[_type]["map"].iteritems():
+        for snode, edges in valid_dict[_type]["map"].iteritems():
             if anything_else not in edges.keys():
                 continue
             edges["anything_else"] = edges[anything_else]
             del edges[anything_else]
 
-    fsm_json = json.dumps(fsm_dict)
-    fsmf.write(fsm_json)
+        try:
+            _fsm = _fsm.everythingbut()
+        except:
+            print "error while get complement fsm"
+            continue
+
+        invalid_dict[_type] = {}
+        for key, value in _fsm.__dict__.iteritems():
+            v = value
+            if type(value) == set:
+                v = list(v)
+            invalid_dict[_type][key] = v
+
+        if anything_else in invalid_dict[_type]["alphabet"]:
+            invalid_dict[_type]["alphabet"].remove(anything_else)
+            invalid_dict[_type]["alphabet"].append("anything_else")
+
+        for snode, edges in invalid_dict[_type]["map"].iteritems():
+            if anything_else not in edges.keys():
+                continue
+            edges["anything_else"] = edges[anything_else]
+            del edges[anything_else]
+
+    json_str = json.dumps({"valid_fsms": valid_dict, "invalid_fsms": invalid_dict})
+    fsmf.write(json_str)
     fsmf.close()
 
 

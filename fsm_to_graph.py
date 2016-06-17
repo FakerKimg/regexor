@@ -4,12 +4,12 @@ import json
 import networkx
 
 f = open("valid.fsms", "r")
-fsm_json = f.readline()
+json_str = f.readline()
 f.close()
 
 
-
-fsm_dict = json.loads(fsm_json)
+fsm_dict = json.loads(json_str)
+fsm_dict = fsm_dict["valid_fsms"]
 fsm_dict = fsm_dict["url"]
 
 # copy alphabet
