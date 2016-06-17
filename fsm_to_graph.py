@@ -2,6 +2,7 @@ from regexfsm.fsm import fsm
 from regexfsm.fsm import anything_else
 import json
 import networkx
+import string
 
 f = open("valid.fsms", "r")
 fsm_json = f.readline()
@@ -33,6 +34,8 @@ valid_fsm = fsm(alphabet=set(cpalphabet), states=set(fsm_dict["states"]), initia
 negative_fsm = valid_fsm.everythingbut()
 
 
+else_chars = [c for c in string.printable[:-6] if c not in negative_fsmalphabet]
+#else_chars = [c for c in string.printable if c not in negative_fsmalphabet]
 
 g = networkx.DiGraph(initial=negative_fsm.initial, finals=list(negative_fsm.finals), alphabet=cpalphabet)
 g.add_nodes_from(list(negative_fsm.states))
