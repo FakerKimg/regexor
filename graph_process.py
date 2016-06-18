@@ -154,6 +154,15 @@ def all_dag_covers(confenseg):
     return dag_paths
 
 
+def gather_condense_dag_edges(condenseg):
+    dag_edges = set()
+    for dag_path in condenseg.graph["dag_paths"]:
+        for i in range(0, len(dag_path)-1):
+            dag_edges.add((dag_path[i], dag_path[i+1]))
+
+    condenseg.graph["dag_edges"] = list(dag_edges)
+    return
+
 # algorithms for finding paths (in SCC????)
 
 shortest_paths = []
@@ -229,6 +238,12 @@ def radiation_and_pack_paths(scc, scc_index):
     return
 
 
+
+simply_bfs(condenseg)
+#all_bfs_branch(condenseg)
+#all_dag_covers(condenseg)
+gather_condense_dag_edges(condenseg)
+
 i = 0
 for scc in sccs:
     find_shortest_paths(sccs[i], i)
@@ -236,81 +251,4 @@ for scc in sccs:
     #radiation_and_pack_paths(sccs[i], i)
 
     i = i + 1
-
-
-
-""" old code
-
-for scc in sccs:
-    scc.graph["replaceable_graphs"] = []
-
-    shortest_paths = find_shortest_paths_pairs(scc)
-
-    for shortest_path in shortest_paths:
-        rg = networkx.DiGraph()
-        if len(shortest_path)==1:
-            rg.add_node(shortest_path[0])
-
-        for i in range(0, len(shortest_path)-1):
-            rg.add_edge(shortest_path[i], shortest_path[i+1])
-
-        scc.graph["replaceable_graphs"].append(rg)
-
-
-
-
-
-# create simplified graphs
-def create_simplified_graphs(g, sccs, scc_index, simplified_graph, simplified_graphs):
-    scc = sccs[scc_index]
-    for replaceable_graph in scc.graph["replaceable_graphs"]:
-        sg = networkx.DiGraph(simplified_graph)
-        if len(replaceable_graph.edges())==0:
-            sg.add_nodes_from(replaceable_graph.nodes())
-
-        for edge in replaceable_graph.edges():
-            sg.add_edge(edge[0], edge[1])
-            sg.edge[edge[0]][edge[1]]["_inputs"] = list(g.edge[edge[0]][edge[1]]["_inputs"])
-
-        if scc_index == len(sccs)-1:
-            simplified_graphs.append(sg)
-        else:
-            create_simplified_graphs(g, sccs, scc_index+1, sg, simplified_graphs)
-
-    return
-
-def add_dag_edges(g, simplified_graphs, dag_edges):
-    for simplified_graph in simplified_graphs:
-        for edge in dag_edges:
-            assert(edge not in simplified_graph.edges()) # ?????
-            if edge[0] not in simplified_graph.nodes() or edge[1] not in simplified_graph.nodes():
-                continue
-
-            simplified_graph.add_edge(edge[0], edge[1])
-            simplified_graph.edge[edge[0]][edge[1]]["_inputs"]=list(g.edge[edge[0]][edge[1]]["_inputs"])
-    return
-
-def check_fsm_usability(simplified_graphs):
-    new_simplified_graphs = []
-    for simplified_graph in simplified_graphs:
-        for final in simplified_graph.graph["finals"]:
-            try:
-                networkx.shortest_path(simplified_graph, simplified_graph.graph["initial"], final)
-                new_simplified_graphs.append(simplified_graph)
-                break
-            except Exception as e: # no nodes or no path between nodes
-                print e
-
-    return new_simplified_graphs
-
-simplified_graphs = []
-sg = networkx.DiGraph(alphabet=g.graph["alphabet"], initial=g.graph["initial"], finals=g.graph["finals"])
-
-create_simplified_graphs(g, sccs, 0, sg, simplified_graphs)
-add_dag_edges(g, simplified_graphs, dag_edges)
-simplified_graphs = check_fsm_usability(simplified_graphs)
-
-"""
-
-
 

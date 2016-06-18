@@ -9,8 +9,8 @@ def greenfsm_to_FDFA(gfsm):
 
     # use string.printable as alphabet
     dfa.addSigma(string.printable[:-6])
-    #else_chars = [c for c in string.printable[:-6] if c not in g.graph["alphabet"]]
-    else_chars = [c for c in string.printable if c not in gfsm.__dict__["alphabet"]]
+    else_chars = [c for c in string.printable[:-6] if c not in g.graph["alphabet"]]
+    #else_chars = [c for c in string.printable if c not in gfsm.__dict__["alphabet"]]
 
     # add states
     states_mapping = {}
