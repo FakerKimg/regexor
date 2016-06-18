@@ -10,7 +10,7 @@ f.close()
 
 
 fsm_dict = json.loads(fsm_json)
-fsm_dict = fsm_dict["email"]
+fsm_dict = fsm_dict["url"]
 
 # copy alphabet
 cpalphabet = [ s.encode("utf-8") for s in fsm_dict["alphabet"] ]
@@ -33,11 +33,11 @@ valid_fsm = fsm(alphabet=set(cpalphabet), states=set(fsm_dict["states"]), initia
 negative_fsm = valid_fsm.everythingbut()
 
 
-g = networkx.DiGraph(initial=fsm_dict["initial"], finals=fsm_dict["finals"], alphabet=cpalphabet)
-g.add_nodes_from(list(fsm_dict["states"]))
+g = networkx.DiGraph(initial=negative_fsm.initial, finals=list(negative_fsm.finals), alphabet=negative_fsm.map)
+g.add_nodes_from(list(negative_fsm.states))
 
 # use add_edges_from will be better ???
-for sindex, edges in cpmap.iteritems():
+for sindex, edges in negative_fsm.map.iteritems():
     for _input, eindex in edges.iteritems():
         g.add_edge(sindex, eindex)
         g.edge[sindex][eindex].setdefault("_inputs", [])

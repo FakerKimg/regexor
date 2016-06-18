@@ -6048,6 +6048,7 @@ class GFA(OFA):
             del self.delta[st][st]
         else:
             r2 = None
+        import gc
         for s in self.delta:
             if st not in self.delta[s]:
                 continue
@@ -6056,23 +6057,24 @@ class GFA(OFA):
             for s1 in self.delta[st]:
                 r3 = copy(self.delta[st][s1])
                 if r2 is not None:
-                    r = reex.concat(r1, reex.concat(star(r2), r3, copy(self.Sigma)), copy(self.Sigma))
+                    r = reex.concat(r1, reex.concat(r2, r3, copy(self.Sigma)), copy(self.Sigma))
                 else:
                     r = reex.concat(r1, r3, copy(self.Sigma))
                 if s1 in self.delta[s]:
                     self.delta[s][s1] = reex.disj(self.delta[s][s1], r, copy(self.Sigma))
                 else:
                     self.delta[s][s1] = r
+
+            gc.collect()
+
         del self.delta[st]
 
     def eliminateAll(self, lr):
         """Eliminate a list of states.
 
         :param list lr: list of states indexes"""
-        import gc
         for s in lr:
             self.eliminate(s)
-            gc.collect()
 
     def dup(self):
         """ Returns a copy of a GFA
