@@ -9,7 +9,7 @@ f.close()
 
 
 fsm_dict = json.loads(json_str)
-fsm_dict = fsm_dict["valid_fsms"]
+fsm_dict = fsm_dict["invalid_fsms"]
 fsm_dict = fsm_dict["url"]
 
 # copy alphabet
@@ -30,7 +30,8 @@ for sstate, edges in fsm_dict["map"].iteritems():
             cpmap[sindex][_input.encode("utf-8")] = eindex
 
 valid_fsm = fsm(alphabet=set(cpalphabet), states=set(fsm_dict["states"]), initial=fsm_dict["initial"], finals=set(fsm_dict["finals"]), map=cpmap)
-negative_fsm = valid_fsm.everythingbut()
+#negative_fsm = valid_fsm.everythingbut()
+negative_fsm = valid_fsm
 
 
 
