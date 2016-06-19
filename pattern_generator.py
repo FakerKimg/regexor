@@ -85,11 +85,13 @@ def iterate_output(wf, output_path, pindex, output_str="", inputs_num=1):
 
     return
 
+def generate_pattern(filename):
+    with open(filename, "w") as wf:
+        for output_path in output_paths:
+            #wf.write(str(output_path) + "\n")
+            iterate_output(wf, output_path, 0, "")
 
-with open("url.shortest.simplybfs.patterns", "w") as wf:
-    for output_path in output_paths:
-        #wf.write(str(output_path) + "\n")
-        iterate_output(wf, output_path, 0, "")
+        wf.close()
 
-    wf.close()
+    return
 
