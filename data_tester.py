@@ -1,7 +1,16 @@
 from pattern_generator import *
-
+import re
 
 exploitable_regexes = {}
+exploitable_regexes["tel"] = [
+    # ((\((0|\+886)2\)[0-9]{4}-[0-9]{4})|((0|\+886)9[0-9]{8})) valid regex
+    "((\((0|\+886)[0-9]\)[0-9]{4}-[0-9]{4})|((0|\+886)9[0-9]{8}))", # segmentation code is random
+    "((\((0|\+886)2\)[0-9]{4,}-[0-9]{4,})|((0|\+886)9[0-9]{8}))", # number over 4 digits
+    "((\((0|\+886)2\)[0-9]{4}-[0-9]{4})|((0|\+886)9[0-9]*))", # mobile phone number over 8 digits
+    "((\((0|\+886)2\)[0-9]{4}-?[0-9]{4})|((0|\+886)9[0-9]{8}))", # - can be ignored
+    "((\(?(0|\+886)2\)?[0-9]{4}-[0-9]{4})|((0|\+886)9[0-9]{8}))", # ( and ) can be ignored
+]
+
 exploitable_regexes["email"] = [
     # [a-zA-Z0-9.!#$%&'*+/=?\^_`{|}~\-]+@[a-zA-Z0-9]([a-zA-Z0-9\-]{0,61}[a-zA-Z0-9])?(\.[a-zA-Z0-9]([a-zA-Z0-9\-]{0,61}[a-zA-Z0-9])?)* valid regex
     "[a-zA-Z0-9!\"#$%&\'()*+,\-./:;<=>?@[\\\\]\^_`{|}~]+@[a-zA-Z0-9]([a-zA-Z0-9\-]{0,61}[a-zA-Z0-9])?(\.[a-zA-Z0-9]([a-zA-Z0-9\-]{0,61}[a-zA-Z0-9])?)*", # the string before @ can be string composed of chars in string.printable[:-6]
@@ -74,10 +83,34 @@ output_paths = fsm_graph_process(g, sccs, condenseg, scc_type, condense_type)
 generate_pattern(filename, output_paths)
 
 
+
+def test_input_breaches(_type, test_patterns, num_breaches=0):
+    _breaches = list(exploitable_regexes[_type])
+    test_breaches = []
+    i = 0
+    while True:
+        if i==num_breaches or i==len(exploitable_regexes[_type]):
+            break
+
+        _breach = _breaches[random.randint(0, len(_breaches)-1)]
+        test_breaches.append(_breach)
+        _breaches.remove(_breach)
+        i = i + 1
+
+    exploit_count = 0
+    for test_breach in test_breaches:
+        prog = re.compile("^" + test_breach + "$")
+        for test_pattern in test_patterns:
+            if prog.match(test_pattern):
+                exploit_count = exploit_count + 1
+                break
+
+    return (exploit_count, len(test_breaches))
+
 with open(filename, "r") as data_file:
-    test_data = []
+    test_patterns = []
     for line in data_file:
-        test_data.append(line)
+        test_patterns.append(line)
 
     data_file.close()
 
