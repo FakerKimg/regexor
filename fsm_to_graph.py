@@ -7,10 +7,11 @@ f = open("parsed.fsms", "r")
 json_str = f.readline()
 f.close()
 
+fsm_type = "date"
 
 fsm_dict = json.loads(json_str)
-fsm_dict = fsm_dict["invalid_fsms"]
-fsm_dict = fsm_dict["url"]
+fsm_dict = fsm_dict["valid_fsms"]
+fsm_dict = fsm_dict[fsm_type]
 
 # copy alphabet
 cpalphabet = [ s.encode("utf-8") for s in fsm_dict["alphabet"] ]
@@ -30,9 +31,30 @@ for sstate, edges in fsm_dict["map"].iteritems():
             cpmap[sindex][_input.encode("utf-8")] = eindex
 
 valid_fsm = fsm(alphabet=set(cpalphabet), states=set(fsm_dict["states"]), initial=fsm_dict["initial"], finals=set(fsm_dict["finals"]), map=cpmap)
-#negative_fsm = valid_fsm.everythingbut()
-negative_fsm = valid_fsm
 
+
+fsm_dict = json.loads(json_str)
+fsm_dict = fsm_dict["invalid_fsms"]
+fsm_dict = fsm_dict[fsm_type]
+
+# copy alphabet
+cpalphabet = [ s.encode("utf-8") for s in fsm_dict["alphabet"] ]
+if "anything_else" in cpalphabet:
+    cpalphabet.remove("anything_else")
+    cpalphabet.append(anything_else)
+
+# copy map
+cpmap = {}
+for sstate, edges in fsm_dict["map"].iteritems():
+    sindex = int(sstate)
+    cpmap[sindex] = {}
+    for _input, eindex in edges.iteritems():
+        if _input=="anything_else":
+            cpmap[sindex][anything_else] = eindex
+        else:
+            cpmap[sindex][_input.encode("utf-8")] = eindex
+
+negative_fsm = fsm(alphabet=set(cpalphabet), states=set(fsm_dict["states"]), initial=fsm_dict["initial"], finals=set(fsm_dict["finals"]), map=cpmap)
 
 
 g = networkx.DiGraph(initial=negative_fsm.initial, finals=list(negative_fsm.finals), alphabet=cpalphabet)
