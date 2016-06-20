@@ -1,10 +1,9 @@
-from graph_process import *
 import networkx
 
 # algoritms for finding paths through dag
 
-def simply_bfs(condenseg):
-    initial_scc = g.node[g.graph["initial"]]["scc_index"]
+def simply_bfs(_graph, condenseg, final_sccs):
+    initial_scc = _graph.node[_graph.graph["initial"]]["scc_index"]
     condense_tree = networkx.bfs_tree(condenseg, initial_scc)
     dag_paths = []
     for final_scc in final_sccs:
@@ -35,8 +34,8 @@ def find_continue_path(condenseg, condense_tree, leaf):
     return
 
 
-def all_bfs_branch(condenseg, ct=None):
-    initial_scc = g.node[g.graph["initial"]]["scc_index"]
+def all_bfs_branch(_graph, condenseg, final_sccsct=None):
+    initial_scc = _graph.node[_graph.graph["initial"]]["scc_index"]
     if not ct:
         condense_tree = networkx.bfs_tree(condenseg, initial_scc)
     else:
@@ -56,7 +55,7 @@ def all_bfs_branch(condenseg, ct=None):
     return dag_paths
 
 
-def all_dag_covers(condenseg):
+def all_dag_covers(_graph, condenseg, final_sccs):
     initial_scc = g.node[g.graph["initial"]]["scc_index"]
     condense_tree = networkx.bfs_tree(condenseg, initial_scc)
     rest_edges = [edge for edge in condenseg.edges() if edge not in condense_tree.edges()]
@@ -92,36 +91,37 @@ def gather_condense_dag_edges(condenseg):
     condenseg.graph["condense_edges"] = list(dag_edges)
     return
 
+def basic_condenseg_process(_graph, sccs, dag_edges):
+    condenseg = networkx.condensation(_graph, sccs)
 
-condenseg = networkx.condensation(g, sccs)
+    for edge in dag_edges:
+        sscc_index = _graph.node[edge[0]]["scc_index"]
+        escc_index = _graph.node[edge[1]]["scc_index"]
 
-for edge in dag_edges:
-    sscc_index = g.node[edge[0]]["scc_index"]
-    escc_index = g.node[edge[1]]["scc_index"]
-
-    condenseg.edge[sscc_index][escc_index].setdefault("condensed_edges", [])
-    condenseg.edge[sscc_index][escc_index]["condensed_edges"].append(edge)
-
-
-# add fake finals (or I should do it on the original graph ??????????????????)
-final_sccs = set()
-for final in g.graph["finals"]:
-    final_sccs.add(g.node[final]["scc_index"])
-final_sccs = list(final_sccs)
-
-for final_scc in final_sccs:
-    condenseg.add_edge(final_scc, str(final_scc)+"_final")
-    condenseg.edge[final_scc][str(final_scc)+"_final"]["condensed_edges"] = []
+        condenseg.edge[sscc_index][escc_index].setdefault("condensed_edges", [])
+        condenseg.edge[sscc_index][escc_index]["condensed_edges"].append(edge)
 
 
+    # add fake finals (or I should do it on the original graph ??????????????????)
+    final_sccs = set()
+    for final in _graph.graph["finals"]:
+        final_sccs.add(_graph.node[final]["scc_index"])
+    final_sccs = list(final_sccs)
 
-def condense_process(_condenseg, _type="simplybfs"):
+    for final_scc in final_sccs:
+        condenseg.add_edge(final_scc, str(final_scc)+"_final")
+        condenseg.edge[final_scc][str(final_scc)+"_final"]["condensed_edges"] = []
+
+    return condenseg, final_sccs
+
+
+def condense_process(_graph, _condenseg, final_sccs, _type="simplybfs"):
     if _type=="simplybfs":
-        simply_bfs(_condenseg)
+        simply_bfs(_graph, _condenseg, final_sccs)
     elif _type=="allbranch":
-        all_bfs_branch(_condenseg)
+        all_bfs_branch(_graph, _condenseg, final_sccs)
     elif _type=="allcover":
-        all_dag_covers(_condenseg)
+        all_dag_covers(_graph, _condenseg, final_sccs)
     gather_condense_dag_edges(_condenseg)
 
     return

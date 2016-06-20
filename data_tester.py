@@ -73,14 +73,14 @@ exploitable_regexes["color"] = [
 
 
 
-
+pattern_type = "url"
 scc_type = "shortest"
 condense_type = "simplybfs"
 
-filename = "email." + scc_type + "." + condense_type + ".patterns"
+filename = pattern_type + "." + scc_type + "." + condense_type + ".patterns"
 
-output_paths = fsm_graph_process(g, sccs, condenseg, scc_type, condense_type)
-generate_pattern(filename, output_paths)
+_ggg, output_paths = generate_patterns(pattern_type, scc_type, condense_type)
+output_patterns(filename, _ggg, output_paths)
 
 
 
