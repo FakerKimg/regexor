@@ -60,11 +60,16 @@ def iterate_condense_paths(condenseg, use_condense_path=True):
     return output_paths
 
 
+def fsm_graph_process(_g, _sccs, _condenseg, scc_type="shortest", condense_type="simplybfs"):
+    scc_process(_sccs, scc_type)
+    condense_process(_condenseg, condense_type)
 
-initial = g.graph["initial"]
-use_condense_path = True if len(dag_edges)*4 > len(g.edges()) else False # this condition ??????????
-output_paths = iterate_condense_paths(condenseg, use_condense_path)
-print "output_paths complete"
+    initial = _g.graph["initial"]
+    use_condense_path = True if len(dag_edges)*4 > len(_g.edges()) else False # this condition ??????????
+    output_paths = iterate_condense_paths(condenseg, use_condense_path)
+    print "output_paths complete"
+
+    return
 
 
 def iterate_output(wf, output_path, pindex, output_str="", inputs_num=1):

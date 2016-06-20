@@ -113,9 +113,16 @@ for final_scc in final_sccs:
     condenseg.add_edge(final_scc, str(final_scc)+"_final")
     condenseg.edge[final_scc][str(final_scc)+"_final"]["condensed_edges"] = []
 
-simply_bfs(condenseg)
-#all_bfs_branch(condenseg)
-#all_dag_covers(condenseg)
-gather_condense_dag_edges(condenseg)
 
+
+def condense_process(_condenseg, _type="simplybfs"):
+    if _type=="simplybfs":
+        simply_bfs(_condenseg)
+    elif _type=="allbranch":
+        all_bfs_branch(_condenseg)
+    elif _type=="allcover":
+        all_dag_covers(_condenseg)
+    gather_condense_dag_edges(_condenseg)
+
+    return
 
