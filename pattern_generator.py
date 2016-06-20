@@ -69,7 +69,7 @@ def fsm_graph_process(_g, _sccs, _condenseg, scc_type="shortest", condense_type=
     output_paths = iterate_condense_paths(condenseg, use_condense_path)
     print "output_paths complete"
 
-    return
+    return output_paths
 
 
 def iterate_output(wf, output_path, pindex, output_str="", inputs_num=1):
@@ -90,9 +90,9 @@ def iterate_output(wf, output_path, pindex, output_str="", inputs_num=1):
 
     return
 
-def generate_pattern(filename):
+def generate_pattern(filename, _output_paths):
     with open(filename, "w") as wf:
-        for output_path in output_paths:
+        for output_path in _output_paths:
             #wf.write(str(output_path) + "\n")
             iterate_output(wf, output_path, 0, "")
 

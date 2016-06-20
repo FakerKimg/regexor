@@ -19,8 +19,8 @@ condense_type = "simplybfs"
 
 filename = "email." + scc_type + "." + condense_type + ".patterns"
 
-fsm_graph_process(g, sccs, condenseg, scc_type, condense_type)
-generate_pattern(filename)
+output_paths = fsm_graph_process(g, sccs, condenseg, scc_type, condense_type)
+generate_pattern(filename, output_paths)
 
 
 with open(filename, "r") as data_file:
@@ -29,9 +29,6 @@ with open(filename, "r") as data_file:
         test_data.append(line)
 
     data_file.close()
-
-
-
 
 
 

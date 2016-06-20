@@ -142,7 +142,7 @@ def radiation_and_pack_paths(scc, scc_index):
     return
 
 
-def scc_process(_sccs, type="shortest"):
+def scc_process(_sccs, _type="shortest"):
     for i in range(0, len(_sccs)):
         if _type=="shortest":
             find_shortest_paths(_sccs[i], i)
