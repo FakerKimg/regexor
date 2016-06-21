@@ -1,4 +1,5 @@
 #from graph_process import *
+from regexfsm.fsm import anything_else_cls
 from condense_graph_process import *
 import string
 import random
@@ -73,13 +74,18 @@ def iterate_output(wf, output_path, pindex, output_str="", inputs_num=1):
         wf.write("\n")
         return
 
-    possible_inputs = extract_edge_inputs((output_path[0], output_path[1]))
+    #possible_inputs = extract_edge_inputs((output_path[pindex], output_path[pindex+1]))
+    possible_inputs = list(g.edge[output_path[pindex]][output_path[pindex+1]]["_inputs"])
     num = 0
     while True:
         if num==inputs_num or len(possible_inputs)==0:
             break
         _input = possible_inputs[random.randint(0, len(possible_inputs)-1)]
-        iterate_output(wf, output_path, pindex+1, output_str+_input)
+        if isinstance(_input, anything_else_cls):
+            else_input = else_chars[random.randint(0, len(else_chars)-1)]
+            iterate_output(wf, output_path, pindex+1, output_str+else_input)
+        else:
+            iterate_output(wf, output_path, pindex+1, output_str+_input)
         possible_inputs.remove(_input)
         num = num + 1
 
@@ -87,6 +93,7 @@ def iterate_output(wf, output_path, pindex, output_str="", inputs_num=1):
 
 
 with open("url.shortest.simplybfs.patterns", "w") as wf:
+    import pdb;pdb.set_trace()
     for output_path in output_paths:
         #wf.write(str(output_path) + "\n")
         iterate_output(wf, output_path, 0, "")
