@@ -28,10 +28,6 @@ def extract_edge_inputs(_graph, edge):
 def iterate_scc(_graph, sccs, condenseg, condense_path, condense_path_index, inward_node, _path, output_paths, use_condense_path):
     scc = sccs[condense_path[condense_path_index]]
     assert(inward_node in scc.nodes())
-    try:
-        scc.node[inward_node]["scc_paths"]
-    except:
-        import pdb;pdb.set_trace()
     for eindex, scc_paths in scc.node[inward_node]["scc_paths"].iteritems():
         for scc_path in scc_paths:
             new_path = _path + scc_path
@@ -46,8 +42,10 @@ def iterate_scc(_graph, sccs, condenseg, condense_path, condense_path_index, inw
 def iterate_dag_edges(_graph, sccs, condenseg, condense_path, condense_path_index, outward_node, _path, output_paths, use_condense_path):
     condense_edge = (condense_path[condense_path_index], condense_path[condense_path_index+1])
     _dag_edges = condenseg.edge[condense_edge[0]][condense_edge[1]]["condensed_edges"]
+
     if len(_dag_edges)==0: # condense_path_index+1 is fake final
-        output_paths.append(_path)
+        if _path[-1] in _graph.graph["finals"]:
+            output_paths.append(_path)
 
     for _dag_edge in _dag_edges:
         if outward_node!=_dag_edge[0] and use_condense_path:
@@ -87,8 +85,11 @@ def iterate_output(wf, _graph, output_path, pindex, output_str="", inputs_num=1)
         wf.write("\n")
         return
 
+    else_chars = [c for c in string.printable[:-6] if c not in _graph.graph["alphabet"]]
+    #else_chars = [c for c in string.printable if c not in _graph.graph["alphabet"]]
+
     #possible_inputs = extract_edge_inputs((output_path[pindex], output_path[pindex+1]))
-    possible_inputs = list(g.edge[output_path[pindex]][output_path[pindex+1]]["_inputs"])
+    possible_inputs = list(_graph.edge[output_path[pindex]][output_path[pindex+1]]["_inputs"])
     num = 0
     while True:
         if num==inputs_num or len(possible_inputs)==0:
@@ -96,9 +97,9 @@ def iterate_output(wf, _graph, output_path, pindex, output_str="", inputs_num=1)
         _input = possible_inputs[random.randint(0, len(possible_inputs)-1)]
         if isinstance(_input, anything_else_cls):
             else_input = else_chars[random.randint(0, len(else_chars)-1)]
-            iterate_output(wf, output_path, pindex+1, output_str+else_input)
+            iterate_output(wf, _graph, output_path, pindex+1, output_str+else_input, inputs_num)
         else:
-            iterate_output(wf, output_path, pindex+1, output_str+_input)
+            iterate_output(wf, _graph, output_path, pindex+1, output_str+_input, inputs_num)
         possible_inputs.remove(_input)
         num = num + 1
 
