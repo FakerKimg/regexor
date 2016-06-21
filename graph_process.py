@@ -79,7 +79,7 @@ def find_shortest_paths(scc, scc_index, shortest_paths):
     return
 
 
-def complete_saleman_path(scc, scc_index, p, rns, outward_node):
+def complete_saleman_path(scc, scc_index, p, rns, outward_node, shortest_paths):
     _path = list(p)
     rest_nodes = rns
 
@@ -115,7 +115,7 @@ def find_fake_saleman_paths(scc, scc_index, shortest_paths):
 
             _path = shortest_paths[scc_index][inward_node][_eindex] if _eindex!=inward_node else [inward_node]
             rest_nodes = [node for node in scc.nodes() if (node not in _path) or (node!=outward_node)]
-            _path = complete_saleman_path(scc, scc_index, _path, rest_nodes, outward_node)
+            _path = complete_saleman_path(scc, scc_index, _path, rest_nodes, outward_node, shortest_paths)
             _path = _path + shortest_paths[scc_index][_path[-1]][outward_node]
 
             scc.node[inward_node].setdefault("scc_paths", {})

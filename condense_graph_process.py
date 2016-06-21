@@ -34,7 +34,7 @@ def find_continue_path(condenseg, condense_tree, leaf):
     return
 
 
-def all_bfs_branch(_graph, condenseg, final_sccsct=None):
+def all_bfs_branch(_graph, condenseg, final_sccs, ct=None):
     initial_scc = _graph.node[_graph.graph["initial"]]["scc_index"]
     if not ct:
         condense_tree = networkx.bfs_tree(condenseg, initial_scc)
@@ -56,11 +56,11 @@ def all_bfs_branch(_graph, condenseg, final_sccsct=None):
 
 
 def all_dag_covers(_graph, condenseg, final_sccs):
-    initial_scc = g.node[g.graph["initial"]]["scc_index"]
+    initial_scc = _graph.node[_graph.graph["initial"]]["scc_index"]
     condense_tree = networkx.bfs_tree(condenseg, initial_scc)
     rest_edges = [edge for edge in condenseg.edges() if edge not in condense_tree.edges()]
 
-    all_bfs_branch(condenseg, condense_tree)
+    all_bfs_branch(_graph, condenseg, final_sccs, condense_tree)
     dag_paths = condenseg.graph["condense_paths"]
     for rest_edge in rest_edges:
         path = networkx.shortest_path(condense_tree, initial_scc, rest_edge[0])

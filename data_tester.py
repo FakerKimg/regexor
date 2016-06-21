@@ -71,11 +71,13 @@ exploitable_regexes["color"] = [
 ]
 
 
+pattern_types = ["tel", "url", "email", "date", "time", "number", "range", "color"]
+scc_types = ["shortest", "fakesaleman", "raidation"]
+condense_types = ["simplybfs", "allbranch", "allcover"]
 
-
-pattern_type = "url"
-scc_type = "shortest"
-condense_type = "simplybfs"
+pattern_type = pattern_types[2]
+scc_type = scc_types[0]
+condense_type = condense_types[0]
 
 filename = pattern_type + "." + scc_type + "." + condense_type + ".patterns"
 
