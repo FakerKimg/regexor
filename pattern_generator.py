@@ -106,7 +106,7 @@ def iterate_output(wf, _graph, output_path, pindex, output_str="", inputs_num=1)
     return
 
 def generate_patterns(_type, scc_type, condense_type):
-    _graph = fsm_graph_transition(_type)
+    valid_graph, _graph = fsm_graph_transition(_type)
     sccs, dag_edges = basic_graph_process(_graph)
     condenseg, final_sccs = basic_condenseg_process(_graph, sccs, dag_edges)
     shortest_paths = create_shortest_path(sccs)
