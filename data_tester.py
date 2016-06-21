@@ -1,5 +1,20 @@
 from pattern_generator import *
 import re
+import string
+
+
+mapping = {
+    "tel": "((\((0|\+886)2\)[0-9]{4}-[0-9]{4})|((0|\+886)9[0-9]{8}))",
+    "url": "[A-Za-z][A-Za-z0-9+\-.]*:(?://(?:(?:[A-Za-z0-9\-._~!$&'()*+,;=:]|%[0-9A-Fa-f]{2})*@)?(?:\[(?:(?:(?:(?:[0-9A-Fa-f]{1,4}:){6}|::(?:[0-9A-Fa-f]{1,4}:){5}|(?:[0-9A-Fa-f]{1,4})?::(?:[0-9A-Fa-f]{1,4}:){4}|(?:(?:[0-9A-Fa-f]{1,4}:){0,1}[0-9A-Fa-f]{1,4})?::(?:[0-9A-Fa-f]{1,4}:){3}|(?:(?:[0-9A-Fa-f]{1,4}:){0,2}[0-9A-Fa-f]{1,4})?::(?:[0-9A-Fa-f]{1,4}:){2}|(?:(?:[0-9A-Fa-f]{1,4}:){0,3}[0-9A-Fa-f]{1,4})?::[0-9A-Fa-f]{1,4}:|(?:(?:[0-9A-Fa-f]{1,4}:){0,4}[0-9A-Fa-f]{1,4})?::)(?:[0-9A-Fa-f]{1,4}:[0-9A-Fa-f]{1,4}|(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?))|(?:(?:[0-9A-Fa-f]{1,4}:){0,5}[0-9A-Fa-f]{1,4})?::[0-9A-Fa-f]{1,4}|(?:(?:[0-9A-Fa-f]{1,4}:){0,6}[0-9A-Fa-f]{1,4})?::)|[Vv][0-9A-Fa-f]+\.[A-Za-z0-9\-._~!$&'()*+,;=:]+)\]|(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)|(?:[A-Za-z0-9\-._~!$&'()*+,;=]|%[0-9A-Fa-f]{2})*)(?::[0-9]*)?(?:/(?:[A-Za-z0-9\-._~!$&'()*+,;=:@]|%[0-9A-Fa-f]{2})*)*|/(?:(?:[A-Za-z0-9\-._~!$&'()*+,;=:@]|%[0-9A-Fa-f]{2})+(?:/(?:[A-Za-z0-9\-._~!$&'()*+,;=:@]|%[0-9A-Fa-f]{2})*)*)?|((?:[A-Za-z0-9\-._~!$&'()*+,;=:@]|%[0-9A-Fa-f]{2})+(?:/(?:[A-Za-z0-9\-._~!$&'()*+,;=:@]|%[0-9A-Fa-f]{2})*)*)?)(?:\?(?:[A-Za-z0-9\-._~!$&'()*+,;=:@/?]|%[0-9A-Fa-f]{2})*)?(#(?:[A-Za-z0-9\-._~!$&'()*+,;=:@/?]|%[0-9A-Fa-f]{2})*)?",
+    "email": "[a-zA-Z0-9.!#$%&'*+/=?\^_`{|}~\-]+@[a-zA-Z0-9]([a-zA-Z0-9\-]{0,61}[a-zA-Z0-9])?(\.[a-zA-Z0-9]([a-zA-Z0-9\-]{0,61}[a-zA-Z0-9])?)*",
+    "date": "(([1-9]*[0-9]{4,}-(0[13578]|1[02])-(0[1-9]|[12][0-9]|3[01]))|([1-9]*[0-9]{4,}-(0[13456789]|1[012])-(0[1-9]|[12][0-9]|30))|([1-9]*[0-9]{4,}-02-(0[1-9]|1[0-9]|2[0-8]))|([1-9]*([13579][26]|[02468][048])00-02-29)|([1-9]*[0-9]{2}([13579][26]|[2468][048]|04|08)-02-29))",
+    "time": "([01]?[0-9]|2[0-3]):[0-5][0-9](:[0-5][0-9](.[0-9]{1,3})?)?",
+    "number": "[\-+]?[0-9]*(.[0-9]*)?([eE][\-+]?[0-9]*)?",
+    "range": "[\-+]?[0-9]*(.[0-9]*)?([eE][\-+]?[0-9]*)?",
+    "color": "#[0-9a-fA-F]{6}",
+}
+
+
 
 exploitable_regexes = {}
 exploitable_regexes["tel"] = [
@@ -87,12 +102,76 @@ output_patterns(filename, _ggg, output_paths)
 """
 
 
-def test_input_breaches(_type, test_patterns, num_breaches=0):
+
+def change_regex(valid_pattern, processing_pattern, invalid_patterns):
+    from regexfsm.lego import *
+    if isinstance(processing_pattern, mult):
+        origin_multiplier = processing_pattern.multiplier
+        if origin_multiplier.min.v!=0 or origin_multiplier.max.v!=None:
+            processing_pattern.__dict__["multiplier"] = multiplier.match("*")[0]
+            invalid_patterns.append(valid_pattern.copy())
+            processing_pattern.__dict__["multiplier"] = origin_multiplier
+
+        if isinstance(processing_pattern.multiplicand, charclass):
+            letters_set = set(string.letters)
+            digits_set = set(string.digits)
+            readable_set = set(string.printable[:-6])
+            printable_set = set(string.printable)
+
+            chars = list(processing_pattern.multiplicand.chars)
+            chars_set = set(chars)
+            if len(chars_set)==0:
+                return
+            elif chars_set.issubset(letters_set) and chars_set!=letters_set:
+                cp_set = letters_set
+            elif chars_set.issubset(digits_set) and chars_set!=digits_set:
+                cp_set = digits_set
+            elif chars_set.issubset(readable_set) and chars_set!=readable_set:
+                cp_set = readable_set
+            elif chars_set.issubset(printable_set) and chars_set!=printable_set:
+                cp_set = printable_set
+
+            if processing_pattern.multiplicand.negated:
+                cp_set = set()
+
+            if cp_set==chars_set:
+                return
+
+            origin_charclass = processing_pattern.multiplicand
+            
+            processing_pattern.__dict__["multiplicand"] = charclass(list(cp_set), origin_charclass.negated)
+            invalid_patterns.append(valid_pattern.copy())
+            processing_pattern.__dict__["multiplicand"] = origin_charclass
+
+    elif isinstance(processing_pattern, conc):
+        mults_list = list(processing_pattern.mults)
+        for mult in mults_list:
+            change_regex(valid_pattern, mult, invalid_patterns)
+
+    elif isinstance(processing_pattern, pattern):
+        concs_list = list(processing_pattern.concs)
+        for conc in concs_list:
+            change_regex(valid_pattern, conc, invalid_patterns)
+
+    return
+
+
+def create_invalid_regexes(valid_regex):
+    invalid_patterns = [] # it's ok to use regexfsm's match ??????????
+    valid_pattern = parse(valid_regex)
+    change_regex(valid_pattern, valid_pattern, invalid_patterns)
+
+    return invalid_patterns
+
+
+def test_input_breaches(_type, test_patterns, num_breaches=None):
     _breaches = list(exploitable_regexes[_type])
     test_breaches = []
     i = 0
     while True:
-        if i==num_breaches or i==len(exploitable_regexes[_type]):
+        if not num_breaches and i==num_breaches:
+            break
+        if i==len(exploitable_regexes[_type]):
             break
 
         _breach = _breaches[random.randint(0, len(_breaches)-1)]
@@ -111,6 +190,11 @@ def test_input_breaches(_type, test_patterns, num_breaches=0):
     return (exploit_count, len(test_breaches))
 
 
+exploitable_patterns = {}
+for input_type in input_types:
+    exploitable_patterns[input_type] = create_invalid_regexes(mapping[input_type])
+
+
 for input_type in input_types:
     for scc_type in scc_types:
         for condense_type in condense_types:
@@ -119,7 +203,7 @@ for input_type in input_types:
             _ggg, output_paths = generate_patterns(input_type, scc_type, condense_type)
             output_patterns(filename, _ggg, output_paths, 1)
 
-            with open(filename, "r") as data_file:
+            with open("./test_patterns/" + filename, "r") as data_file:
                 test_patterns = []
                 for line in data_file:
                     test_patterns.append(line)

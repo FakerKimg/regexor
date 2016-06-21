@@ -114,7 +114,7 @@ def generate_patterns(_type, scc_type, condense_type):
     return _graph, fsm_graph_process(_graph, sccs, dag_edges, condenseg, final_sccs, shortest_paths, scc_type, condense_type)
 
 def output_patterns(filename, _graph, _output_paths, times=1):
-    with open(filename, "w") as wf:
+    with open("./test_patterns/" + filename, "w") as wf:
         for i in range(0, times):
             for output_path in _output_paths:
                 #wf.write(str(output_path) + "\n")
