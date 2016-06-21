@@ -27,6 +27,10 @@ def extract_edge_inputs(_graph, edge):
 def iterate_scc(_graph, sccs, condenseg, condense_path, condense_path_index, inward_node, _path, output_paths, use_condense_path):
     scc = sccs[condense_path[condense_path_index]]
     assert(inward_node in scc.nodes())
+    try:
+        scc.node[inward_node]["scc_paths"]
+    except:
+        import pdb;pdb.set_trace()
     for eindex, scc_paths in scc.node[inward_node]["scc_paths"].iteritems():
         for scc_path in scc_paths:
             new_path = _path + scc_path
@@ -102,11 +106,12 @@ def generate_patterns(_type, scc_type, condense_type):
 
     return _graph, fsm_graph_process(_graph, sccs, dag_edges, condenseg, final_sccs, shortest_paths, scc_type, condense_type)
 
-def output_patterns(filename, _graph, _output_paths):
+def output_patterns(filename, _graph, _output_paths, times=1):
     with open(filename, "w") as wf:
-        for output_path in _output_paths:
-            #wf.write(str(output_path) + "\n")
-            iterate_output(wf, _graph, output_path, 0, "")
+        for i in range(0, times):
+            for output_path in _output_paths:
+                #wf.write(str(output_path) + "\n")
+                iterate_output(wf, _graph, output_path, 0, "")
 
         wf.close()
 

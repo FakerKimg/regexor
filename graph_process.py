@@ -124,6 +124,11 @@ def find_fake_saleman_paths(scc, scc_index, shortest_paths):
     return
 
 def radiation_and_pack_paths(scc, scc_index, shortest_paths):
+    if len(scc.nodes())==1: # is it the only special situation ??????
+        only_node = scc.nodes()[0]
+        scc.node[only_node]["scc_paths"] = {}
+        scc.node[only_node]["scc_paths"][only_node] = [[only_node]]
+        return
     for inward_node in scc.graph["inward_nodes"]:
         for outward_node in scc.graph["outward_nodes"]:
             innodes = [node for node in scc.nodes() if node!=inward_node and node!=outward_node]

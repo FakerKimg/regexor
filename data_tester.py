@@ -71,10 +71,11 @@ exploitable_regexes["color"] = [
 ]
 
 
-pattern_types = ["tel", "url", "email", "date", "time", "number", "range", "color"]
-scc_types = ["shortest", "fakesaleman", "raidation"]
+input_types = ["tel", "url", "email", "date", "time", "number", "range", "color"]
+scc_types = ["shortest", "fakesaleman", "radiation"]
 condense_types = ["simplybfs", "allbranch", "allcover"]
 
+"""
 pattern_type = pattern_types[2]
 scc_type = scc_types[0]
 condense_type = condense_types[0]
@@ -83,7 +84,7 @@ filename = pattern_type + "." + scc_type + "." + condense_type + ".patterns"
 
 _ggg, output_paths = generate_patterns(pattern_type, scc_type, condense_type)
 output_patterns(filename, _ggg, output_paths)
-
+"""
 
 
 def test_input_breaches(_type, test_patterns, num_breaches=0):
@@ -109,12 +110,23 @@ def test_input_breaches(_type, test_patterns, num_breaches=0):
 
     return (exploit_count, len(test_breaches))
 
-with open(filename, "r") as data_file:
-    test_patterns = []
-    for line in data_file:
-        test_patterns.append(line)
 
-    data_file.close()
+for input_type in input_types:
+    for scc_type in scc_types:
+        for condense_type in condense_types:
+            filename = input_type + "." + scc_type + "." + condense_type + ".patterns"
+            print filename
+            _ggg, output_paths = generate_patterns(input_type, scc_type, condense_type)
+            output_patterns(filename, _ggg, output_paths, 1)
+
+            with open(filename, "r") as data_file:
+                test_patterns = []
+                for line in data_file:
+                    test_patterns.append(line)
+
+                print len(test_patterns)
+                print test_input_breaches(input_type, test_patterns, 3)
+                data_file.close()
 
 
 
