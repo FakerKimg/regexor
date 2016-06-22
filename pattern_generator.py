@@ -26,11 +26,21 @@ def extract_edge_inputs(_graph, edge):
 
 
 def iterate_scc(_graph, sccs, condenseg, condense_path, condense_path_index, inward_node, _path, output_paths, use_condense_path):
-    scc = sccs[condense_path[condense_path_index]]
+    if not use_condense_path:
+        scc = sccs[_graph.node[inward_node]["scc_index"]]
+    else:
+        scc = sccs[condense_path[condense_path_index]]
     assert(inward_node in scc.nodes())
     for eindex, scc_paths in scc.node[inward_node]["scc_paths"].iteritems():
         for scc_path in scc_paths:
             new_path = _path + scc_path
+            assert(eindex==new_path[-1])
+            if not use_condense_path:
+                if eindex in _graph.graph["finals"]:
+                    output_paths.append(new_path)
+                iterate_dag_edges(_graph, sccs, condenseg, condense_path, condense_path_index, eindex, new_path, output_paths, use_condense_path)
+                continue
+
             if condense_path_index==len(condense_path)-1:
                 if eindex in _graph.graph["finals"]:
                     output_paths.append(new_path)
@@ -40,6 +50,14 @@ def iterate_scc(_graph, sccs, condenseg, condense_path, condense_path_index, inw
     return
 
 def iterate_dag_edges(_graph, sccs, condenseg, condense_path, condense_path_index, outward_node, _path, output_paths, use_condense_path):
+    if not use_condense_path:
+        current_scc = sccs[_graph.node[outward_node]["scc_index"]]
+        for outward_edge in current_scc.node[outward_node]["outward_edges"]:
+            #next_scc = sccs[_graph.node[outward_edge[1]]["scc_index"]]
+            #assert(outward_node in next_scc.nodes())
+            iterate_scc(_graph, sccs, condenseg, condense_path, condense_path_index, outward_edge[1], _path, output_paths, use_condense_path)
+        return
+
     condense_edge = (condense_path[condense_path_index], condense_path[condense_path_index+1])
     _dag_edges = condenseg.edge[condense_edge[0]][condense_edge[1]]["condensed_edges"]
 
@@ -58,8 +76,8 @@ def iterate_dag_edges(_graph, sccs, condenseg, condense_path, condense_path_inde
 def iterate_condense_paths(_graph, sccs, condenseg, use_condense_path=True):
     output_paths = []
     inward_node = _graph.graph["initial"]
-    if not use_condense_path:
-        iterate_scc(sccs, condenseg, condense_path, 0, inward_node, [], output_paths, use_condense_path) # i beleive in python's pass by object
+    if not use_condense_path: # not covered ????
+        iterate_scc(_graph, sccs, condenseg, condenseg.graph["condense_paths"][0], 0, inward_node, [], output_paths, use_condense_path) # i beleive in python's pass by object
     else:
         for condense_path in condenseg.graph["condense_paths"]:
             iterate_scc(_graph, sccs, condenseg, condense_path, 0, inward_node, [], output_paths, use_condense_path) # i beleive in python's pass by object
