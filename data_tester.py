@@ -1,7 +1,7 @@
 from pattern_generator import *
 import re
 import string
-
+from mutate_regex import *
 
 mapping = {
     "tel": "((\((0|\+886)2\)[0-9]{4}-[0-9]{4})|((0|\+886)9[0-9]{8}))",
@@ -9,8 +9,8 @@ mapping = {
     "email": "[a-zA-Z0-9.!#$%&'*+/=?\^_`{|}~\-]+@[a-zA-Z0-9]([a-zA-Z0-9\-]{0,61}[a-zA-Z0-9])?(\.[a-zA-Z0-9]([a-zA-Z0-9\-]{0,61}[a-zA-Z0-9])?)*",
     "date": "(([1-9]*[0-9]{4,}-(0[13578]|1[02])-(0[1-9]|[12][0-9]|3[01]))|([1-9]*[0-9]{4,}-(0[13456789]|1[012])-(0[1-9]|[12][0-9]|30))|([1-9]*[0-9]{4,}-02-(0[1-9]|1[0-9]|2[0-8]))|([1-9]*([13579][26]|[02468][048])00-02-29)|([1-9]*[0-9]{2}([13579][26]|[2468][048]|04|08)-02-29))",
     "time": "([01]?[0-9]|2[0-3]):[0-5][0-9](:[0-5][0-9](.[0-9]{1,3})?)?",
-    "number": "[\-+]?[0-9]*(.[0-9]*)?([eE][\-+]?[0-9]*)?",
-    "range": "[\-+]?[0-9]*(.[0-9]*)?([eE][\-+]?[0-9]*)?",
+    "number": "[\-+]?[0-9]*(\.[0-9]*)?([eE][\-+]?[0-9]*)?",
+    "range": "[\-+]?[0-9]*(\.[0-9]*)?([eE][\-+]?[0-9]*)?",
     "color": "#[0-9a-fA-F]{6}",
 }
 
@@ -155,7 +155,7 @@ def change_regex(valid_pattern, processing_pattern, invalid_patterns):
     return
 
 
-def create_invalid_regexes(valid_regex):
+def create_independent_invalid_regexes(valid_regex):
     invalid_patterns = [] # it's ok to use regexfsm's match ??????????
     valid_pattern = parse(valid_regex)
     change_regex(valid_pattern, valid_pattern, invalid_patterns)
@@ -163,14 +163,15 @@ def create_invalid_regexes(valid_regex):
     return invalid_patterns
 
 
-def test_input_breaches(_type, test_patterns, num_breaches=None):
-    _breaches = list(exploitable_regexes[_type])
+def test_input_breaches(_type, tested_patterns, exploitable_patterns, num_breaches=None):
+    _breaches = list(exploitable_patterns[_type])
     test_breaches = []
     i = 0
+    # if num_breaches==None, the while loop is equal to test_breaches = _breaches
     while True:
-        if not num_breaches and i==num_breaches:
+        if num_breaches and i==num_breaches:
             break
-        if i==len(exploitable_regexes[_type]):
+        if i==len(exploitable_patterns[_type]):
             break
 
         _breach = _breaches[random.randint(0, len(_breaches)-1)]
@@ -178,26 +179,31 @@ def test_input_breaches(_type, test_patterns, num_breaches=None):
         _breaches.remove(_breach)
         i = i + 1
 
+    print "exploitable patterns : ", len(test_breaches)
     exploit_count = 0
     for test_breach in test_breaches:
-        prog = re.compile("^" + test_breach + "$")
-        for test_pattern in test_patterns:
+        #prog = re.compile("^" + test_breach + "$")
+        for tested_pattern in tested_patterns:
+            """
             if prog.match(test_pattern):
+                exploit_count = exploit_count + 1
+                break
+            """
+            if test_breach.matches(tested_pattern):
                 exploit_count = exploit_count + 1
                 break
 
     return (exploit_count, len(test_breaches))
 
 
+"""
 exploitable_patterns = {}
 for input_type in input_types:
     #exploitable_patterns[input_type] = create_invalid_regexes(mapping[input_type])
-    try:
-        exploitable_patterns[input_type] = [parse(rrr) for rrr in exploitable_regexes[input_type]] + create_invalid_regexes(mapping[input_type])
-    except:
-        import pdb;pdb.set_trace()
+    exploitable_patterns[input_type] = [parse(rrr) for rrr in exploitable_regexes[input_type]] + create_invalid_regexes(mapping[input_type])
+"""
 
-
+results = {}
 for input_type in input_types:
     for scc_type in scc_types:
         for condense_type in condense_types:
@@ -207,13 +213,39 @@ for input_type in input_types:
             output_patterns(filename, _ggg, output_paths, 1)
 
             with open("./test_patterns/" + filename, "r") as data_file:
-                test_patterns = []
+                tested_datas = []
                 for line in data_file:
-                    test_patterns.append(line)
+                    tested_datas.append(line)
 
-                print len(test_patterns)
-                print test_input_breaches(input_type, test_patterns, 3)
+                print "num of tested datas : ", len(tested_datas)
+                exploitable_regexes = create_invalid_regexes(mapping[input_type], 5)
+
+                exploit_count = 0
+                for exploitable_regex in exploitable_regexes:
+                    for tested_data in tested_datas:
+                        try:
+                            if tested_data=="": # can we do this ??????????
+                                continue
+                            prog = re.compile("^" + exploitable_regex + "$")
+                            tested_output = tested_data[:-1] # get rid of "\n"
+                            if prog.match(tested_output):
+                                exploit_count = exploit_count + 1
+                                break
+                        except:
+                            print "error when test " + tested_data  + " with r\"" + exploitable_regex + "\""
+
+                print (exploit_count, len(exploitable_regexes))
+                results[filename] = (exploit_count, len(exploitable_regexes))
+
                 data_file.close()
+
+                """
+                print "tested patterns : ", len(tested_patterns)
+                print test_input_breaches(input_type, tested_patterns, exploitable_patterns)
+                data_file.close()
+                """
+
+pass
 
 
 
