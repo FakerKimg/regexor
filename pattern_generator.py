@@ -99,8 +99,9 @@ def fsm_graph_process(_g, _sccs, dag_edges, _condenseg, final_sccs, shortest_pat
 
 def iterate_output(wf, _graph, output_path, pindex, output_str="", inputs_num=1):
     if pindex==len(output_path)-1:
-        wf.write(output_str)
-        wf.write("\n")
+        if output_str!="":
+            wf.write(output_str)
+            wf.write("\n")
         return
 
     else_chars = [c for c in string.printable[:-6] if c not in _graph.graph["alphabet"]]

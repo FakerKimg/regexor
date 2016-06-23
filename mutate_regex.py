@@ -17,7 +17,7 @@ valid_regexes = {
 
 
 # turn regexfsm.lego into str acceptable by re
-def regexfsm_to_str(_lego):
+def regexfsm_to_str(_lego, for_grep=True):
     result_str = ""
     if isinstance(_lego, pattern):
         concs_list = list(_lego.concs)
@@ -33,7 +33,16 @@ def regexfsm_to_str(_lego):
         _multiplier = _lego.multiplier
         _min = str(_multiplier.min.v) if _multiplier.min.v!=0 else "0"
         _max = str(_multiplier.max.v) if _multiplier.max.v!=None else ""
-        result_str = regexfsm_to_str(_multiplicand) + "{" + _min + "," + _max + "}"
+        result_str = regexfsm_to_str(_multiplicand)
+        if _min=="0" and _max=="":
+            result_str = result_str + "*"
+        elif _min==_max:
+            if _min=="1":
+                pass
+            else:
+                result_str = result_str + "{" + _min + "}"
+        else:
+            result_str = result_str + "{" + _min + "," + _max + "}"
 
     elif isinstance(_lego, charclass):
         chars = list(_lego.chars)
@@ -41,11 +50,40 @@ def regexfsm_to_str(_lego):
             if len(chars)==0:
                 return "."
             result_str = "^"
-        for c in chars:
-            cc = c
-            if c in "\\[]^-":
-                cc = "\\" + cc
-            result_str = result_str + cc
+
+        if for_grep:
+            has_hyphen = False
+            has_front_bracket = False
+            has_back_bracket = False
+            for c in chars:
+                cc = c
+                if c=="-":
+                    has_hyphen = True
+                    continue
+                elif c=="[":
+                    has_front_bracket = True
+                    continue
+                elif c=="]":
+                    has_back_bracket = True
+                    continue
+                elif c=="`":
+                    cc = "\\`"
+                elif c=="\"":
+                    cc = "\\\""
+
+                result_str = result_str + cc
+
+            result_str = result_str + "-" if has_hyphen else result_str
+            result_str = "[" + result_str if has_front_bracket else result_str
+            result_str = "]" + result_str if has_back_bracket else result_str
+
+        else:
+            for c in chars:
+                cc = c
+                if c in "\\[]^-":
+                    cc = "\\" + cc
+                result_str = result_str + cc
+
         result_str = "[" + result_str + "]"
 
     return result_str
