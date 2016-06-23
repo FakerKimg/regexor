@@ -1,4 +1,5 @@
 test_patterns/
+evaluation_patterns/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

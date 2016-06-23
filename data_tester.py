@@ -5,6 +5,9 @@ from mutate_regex import *
 from regexfsm.lego import *
 import subprocess
 import os
+import time
+import datetime
+import shutil
 
 mapping = {
     "tel": "((\((0|\+886)2\)[0-9]{4}-[0-9]{4})|((0|\+886)9[0-9]{8}))",
@@ -58,9 +61,23 @@ for input_type in input_types:
                         print "error occurs when using \"" + " ".join(cmd_line) + "\""
 
             print (exploit_count, len(exploitable_regexes))
-            results[filename] = (exploit_count, len(exploitable_regexes))
+            results[filename] = list((exploit_count, len(exploitable_regexes)))
 
-pass
+ts = time.time()
+st = datetime.datetime.fromtimestamp(ts).strftime('%Y-%m-%d-%H-%M-%S')
+os.mkdir("./evaluation_patterns/" + st)
+
+
+for input_type in input_types:
+    for scc_type in scc_types:
+        for condense_type in condense_types:
+            filename = input_type + "." + scc_type + "." + condense_type + ".patterns"
+            shutil.copyfile("./test_patterns/"+filename, "./evaluation_patterns/" + st + "/" +filename)
+
+with open("./evaluation_patterns/"+st+"/evaluation_result", "w") as rf:
+    json_str = json.dumps(results)
+    rf.write(json_str)
+    rf.close()
 
 
 
