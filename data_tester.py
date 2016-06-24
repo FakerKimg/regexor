@@ -35,7 +35,7 @@ for input_type in input_types:
             _ggg, output_paths = generate_patterns(input_type, scc_type, condense_type)
             output_patterns(filename, _ggg, output_paths, 1)
 
-            exploitable_regexes = create_invalid_regexes(mapping[input_type], 5)
+            exploitable_regexes = create_invalid_regexes(mapping[input_type], 6)
             exploit_count = 0
             for exploitable_regex in exploitable_regexes:
                 try:
@@ -69,15 +69,28 @@ os.mkdir("./evaluation_patterns/" + st)
 
 
 for input_type in input_types:
+    csvf = open("./evaluation_patterns/"+input_type+"_results.csv", "a")
+    csvf.write("\n")
+    csvf.write(st)
     for scc_type in scc_types:
         for condense_type in condense_types:
             filename = input_type + "." + scc_type + "." + condense_type + ".patterns"
             shutil.copyfile("./test_patterns/"+filename, "./evaluation_patterns/" + st + "/" +filename)
 
+            csvf.write(",")
+            count_list = results[filename]
+            csvf.write(str(count_list[0]))
+            csvf.write(",")
+            csvf.write(str(count_list[1]))
+
+    csvf.close()
+
+"""
 with open("./evaluation_patterns/"+st+"/evaluation_result", "w") as rf:
     json_str = json.dumps(results)
     rf.write(json_str)
     rf.close()
+"""
 
 
 
