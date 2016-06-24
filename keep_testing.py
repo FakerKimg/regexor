@@ -4,7 +4,7 @@ i = 3
 while True:
     test_once(i)
     i = i + 1
-    if i==9:
+    if i==6:
         i = 3
 
 
