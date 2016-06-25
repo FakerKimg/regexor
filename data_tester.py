@@ -26,19 +26,23 @@ def test_once(tester_num=5):
 
     input_types = ["tel", "url", "email", "date", "time", "number", "range", "color"]
     scc_types = ["shortest", "fakesaleman", "radiation"]
-    condense_types = ["simplybfs", "allbranch", "allcover"]
-
+    condense_types = ["shortest", "simplybfs", "simplydfs", "allcoverbfs", "allcoverdfs"]
 
     results = {}
     for input_type in input_types:
+        exploitable_regexes = create_invalid_regexes(mapping[input_type], tester_num)
         for scc_type in scc_types:
             for condense_type in condense_types:
                 filename = input_type + "." + scc_type + "." + condense_type + ".patterns"
                 print filename
                 _ggg, output_paths = generate_patterns(input_type, scc_type, condense_type)
                 output_patterns(filename, _ggg, output_paths, 1)
-    
-                exploitable_regexes = create_invalid_regexes(mapping[input_type], tester_num)
+
+                with open(filename, "r") as test_file:
+                    for line in test_file:
+                        test_strs.append(line)
+                    test_file.close()
+
                 exploit_count = 0
                 for exploitable_regex in exploitable_regexes:
                     try:
@@ -54,17 +58,16 @@ def test_once(tester_num=5):
                         result = subprocess.check_output(cmd_line, shell=True)
                         if result!="":
                             exploit_count = exploit_count + 1
-    
+
                     except Exception as e:
                         if e.returncode==1 and e.output=="": # match empty
                             pass
                             #print "wrong again?????"
                         else:
-                            import pdb;pdb.set_trace()
                             print "error occurs when using \"" + " ".join(cmd_line) + "\""
     
                 print (exploit_count, len(exploitable_regexes))
-                results[filename] = list((exploit_count, len(exploitable_regexes)))
+                results[filename] = [exploit_count, len(exploitable_regexes)]
 
     ts = time.time()
     st = datetime.datetime.fromtimestamp(ts).strftime('%Y-%m-%d-%H-%M-%S')

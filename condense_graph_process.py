@@ -2,6 +2,17 @@ import networkx
 
 # algoritms for finding paths through dag
 
+def dag_shortest_path(_graph, condenseg, final_sccs):
+    initial_scc = _graph.node[_graph.graph["initial"]]["scc_index"]
+    dag_paths = []
+    for final_scc in final_sccs:
+        path = networkx.shortest_path(condenseg, initial_scc, final_scc)
+        dag_paths.append(path)
+
+    condenseg.graph["condense_paths"] = dag_paths
+    return dag_paths
+
+
 def simply_bfs(_graph, condenseg, final_sccs):
     initial_scc = _graph.node[_graph.graph["initial"]]["scc_index"]
     condense_tree = networkx.bfs_tree(condenseg, initial_scc)
@@ -34,10 +45,13 @@ def find_continue_path(condenseg, condense_tree, leaf):
     return
 
 
-def all_bfs_branch(_graph, condenseg, final_sccs, ct=None):
+def all_tree_branch(_graph, condenseg, final_sccs, tree_type, ct=None):
     initial_scc = _graph.node[_graph.graph["initial"]]["scc_index"]
     if not ct:
-        condense_tree = networkx.bfs_tree(condenseg, initial_scc)
+        if tree_type=="bfs":
+            condense_tree = networkx.bfs_tree(condenseg, initial_scc)
+        elif tree_type=="dfs":
+            condense_tree = networkx.dfs_tree(condenseg, initial_scc)
     else:
         condense_tree = ct
     dag_paths = []
@@ -55,12 +69,15 @@ def all_bfs_branch(_graph, condenseg, final_sccs, ct=None):
     return dag_paths
 
 
-def all_dag_covers(_graph, condenseg, final_sccs):
+def all_dag_covers(_graph, condenseg, final_sccs, tree_type):
     initial_scc = _graph.node[_graph.graph["initial"]]["scc_index"]
-    condense_tree = networkx.bfs_tree(condenseg, initial_scc)
+    if tree_type=="bfs":
+        condense_tree = networkx.bfs_tree(condenseg, initial_scc)
+    elif tree_type=="dfs":
+        condense_tree = networkx.dfs_tree(condenseg, initial_scc)
     rest_edges = [edge for edge in condenseg.edges() if edge not in condense_tree.edges()]
 
-    all_bfs_branch(_graph, condenseg, final_sccs, condense_tree)
+    all_tree_branch(_graph, condenseg, final_sccs, tree_type, condense_tree)
     dag_paths = condenseg.graph["condense_paths"]
     for rest_edge in rest_edges:
         path = networkx.shortest_path(condense_tree, initial_scc, rest_edge[0])
@@ -116,13 +133,17 @@ def basic_condenseg_process(_graph, sccs, dag_edges):
 
 
 def condense_process(_graph, _condenseg, final_sccs, _type="simplybfs"):
-    if _type=="simplybfs":
-        simply_bfs(_graph, _condenseg, final_sccs)
-    elif _type=="allbranch":
-        all_bfs_branch(_graph, _condenseg, final_sccs)
-    elif _type=="allcover":
-        all_dag_covers(_graph, _condenseg, final_sccs)
-    gather_condense_dag_edges(_condenseg)
+    if _type=="shortest":
+        dag_shortest_path(_graph, _condenseg, final_sccs)
+    elif _type=="simplybfs":
+        all_tree_branch(_graph, _condenseg, final_sccs, "bfs")
+    elif _type=="simplydfs":
+        all_tree_branch(_graph, _condenseg, final_sccs, "dfs")
+    elif _type=="allcoverbfs":
+        all_dag_covers(_graph, _condenseg, final_sccs, "bfs")
+    elif _type=="allcoverdfs":
+        all_dag_covers(_graph, _condenseg, final_sccs, "dfs")
+    #gather_condense_dag_edges(_condenseg)
 
     return
 
