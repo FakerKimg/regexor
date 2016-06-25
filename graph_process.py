@@ -112,20 +112,20 @@ def find_fake_saleman_paths(scc, scc_index, shortest_paths):
 
                 minus_min = 0
                 _max_discover = 0
-                _eindex = start_node
+                _eindex = _start
                 for rest_node in rest_nodes:
                     _shortest_path = shortest_paths[scc_index][_start][rest_node]
-                    if _max<len(rest_nodes_set.intersection(set(_shortest_path))):
+                    if _max_discover<len(rest_nodes_set.intersection(set(_shortest_path))):
                         _eindex = rest_node
-                        _max = len(rest_nodes_set.intersection(set(_shortest_path)))
-                    elif _max==len(rest_nodes_set.intersection(set(_shortest_path))) and minus_min<-len(_shortest_path):
+                        _max_discover = len(rest_nodes_set.intersection(set(_shortest_path)))
+                    elif _max_discover==len(rest_nodes_set.intersection(set(_shortest_path))) and minus_min<-len(_shortest_path):
                         _eindex = rest_node
                         minus_min = -len(_shortest_path)
 
                 _path = _path[:-1] + shortest_paths[scc_index][_start][_eindex]
                 _start = _path[-1]
 
-            _path = _path[:-1] + shortest_path[scc_index][_start][outward_node]
+            _path = _path[:-1] + shortest_paths[scc_index][_start][outward_node]
             scc.node[inward_node].setdefault("scc_paths", {})
             scc.node[inward_node]["scc_paths"][outward_node] = [_path]
 
@@ -138,12 +138,12 @@ def radiation_and_pack_paths(scc, scc_index, shortest_paths):
         scc.node[only_node]["scc_paths"][only_node] = [[only_node]]
         return
 
-    rest_nodes = [node for node in scc.nodes if node not in scc.graph["outward_nodes"] and node not in scc.graph["inward_nodes"]]
+    rest_nodes = [node for node in scc.nodes() if node not in scc.graph["outward_nodes"] and node not in scc.graph["inward_nodes"]]
     for inward_node in scc.graph["inward_nodes"]:
         scc.node[inward_node].setdefault("scc_paths", {})
         for outward_node in scc.graph["outward_nodes"]:
             scc.node[inward_node]["scc_paths"].setdefault(outward_node, [])
-            scc.node[inward_node]["scc_paths"][outward_node].append(shortest_path[scc_index][inward_node][outward_node])
+            scc.node[inward_node]["scc_paths"][outward_node].append(shortest_paths[scc_index][inward_node][outward_node])
 
             for rest_node in rest_nodes:
                 scc.node[inward_node]["scc_paths"][outward_node].append(shortest_path[scc_index][inward_node][rest_node][:-1] + shortest_path[scc_index][rest_node][outward_node])

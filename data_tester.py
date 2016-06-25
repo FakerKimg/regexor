@@ -38,11 +38,6 @@ def test_once(tester_num=5):
                 _ggg, output_paths = generate_patterns(input_type, scc_type, condense_type)
                 output_patterns(filename, _ggg, output_paths, 1)
 
-                with open(filename, "r") as test_file:
-                    for line in test_file:
-                        test_strs.append(line)
-                    test_file.close()
-
                 exploit_count = 0
                 for exploitable_regex in exploitable_regexes:
                     try:
