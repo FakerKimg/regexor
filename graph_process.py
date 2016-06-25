@@ -106,14 +106,21 @@ def find_fake_saleman_paths(scc, scc_index, shortest_paths):
             _start = inward_node
             while True:
                 rest_nodes = [node for node in scc.nodes() if (node not in _path) and (node!=outward_node) and (node!=_start)]
+                rest_nodes_set = set(rest_nodes)
                 if len(rest_nodes)==0:
                     break
 
-                _max = 0
+                minus_min = 0
+                _max_discover = 0
                 _eindex = start_node
                 for rest_node in rest_nodes:
-                    _eindex = rest_node if _max<len(shortest_paths[scc_index][_start][rest_node]) else _eindex
-                    _max = len(shortest_paths[scc_index][_start][rest_node]) if _max<len(shortest_paths[scc_index][_start][rest_node]) else _max
+                    _shortest_path = shortest_paths[scc_index][_start][rest_node]
+                    if _max<len(rest_nodes_set.intersection(set(_shortest_path))):
+                        _eindex = rest_node
+                        _max = len(rest_nodes_set.intersection(set(_shortest_path)))
+                    elif _max==len(rest_nodes_set.intersection(set(_shortest_path))) and minus_min<-len(_shortest_path):
+                        _eindex = rest_node
+                        minus_min = -len(_shortest_path)
 
                 _path = _path[:-1] + shortest_paths[scc_index][_start][_eindex]
                 _start = _path[-1]
