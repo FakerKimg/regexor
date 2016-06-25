@@ -102,18 +102,23 @@ def find_fake_saleman_paths(scc, scc_index, shortest_paths):
         return
     for inward_node in scc.graph["inward_nodes"]:
         for outward_node in scc.graph["outward_nodes"]:
-            _max = 0
-            _eindex = inward_node
-            for eindex, path in shortest_paths[scc_index][inward_node].iteritems():
-                if eindex==outward_node:
-                    continue
-                _eindex = eindex if _max < len(path) else _eindex
-                _max = len(path) if _max < len(path) else _max
+            _path = []
+            _start = inward_node
+            while True:
+                rest_nodes = [node for node in scc.nodes() if (node not in _path) and (node!=outward_node) and (node!=_start)]
+                if len(rest_nodes)==0:
+                    break
 
-            _path = shortest_paths[scc_index][inward_node][_eindex] if _eindex!=inward_node else [inward_node]
-            _path = complete_saleman_path(scc, scc_index, _path, inward_node, outward_node, shortest_paths)
-            _path = _path[:-1] + shortest_paths[scc_index][_path[-1]][outward_node]
+                _max = 0
+                _eindex = start_node
+                for rest_node in rest_nodes:
+                    _eindex = rest_node if _max<len(shortest_paths[scc_index][_start][rest_node]) else _eindex
+                    _max = len(shortest_paths[scc_index][_start][rest_node]) if _max<len(shortest_paths[scc_index][_start][rest_node]) else _max
 
+                _path = _path[:-1] + shortest_paths[scc_index][_start][_eindex]
+                _start = _path[-1]
+
+            _path = _path[:-1] + shortest_path[scc_index][_start][outward_node]
             scc.node[inward_node].setdefault("scc_paths", {})
             scc.node[inward_node]["scc_paths"][outward_node] = [_path]
 
