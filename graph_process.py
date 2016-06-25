@@ -137,23 +137,24 @@ def radiation_and_pack_paths(scc, scc_index, shortest_paths):
         scc.node[only_node]["scc_paths"] = {}
         scc.node[only_node]["scc_paths"][only_node] = [[only_node]]
         return
+
+    rest_nodes = [node for node in scc.nodes if node not in scc.graph["outward_nodes"] and node not in scc.graph["inward_nodes"]]
     for inward_node in scc.graph["inward_nodes"]:
+        scc.node[inward_node].setdefault("scc_paths", {})
         for outward_node in scc.graph["outward_nodes"]:
-            innodes = [node for node in scc.nodes() if node!=inward_node and node!=outward_node]
-            scc.node[inward_node].setdefault("scc_paths", {})
-            scc.node[inward_node]["scc_paths"][outward_node] = [[inward_node, outward_node]] if len(innodes)==0 and inward_node!=outward_node else []
-            for innode in innodes:
-                scc.node[inward_node]["scc_paths"][outward_node].append(shortest_paths[scc_index][inward_node][innode][:-1] + shortest_paths[scc_index][innode][outward_node])
+            scc.node[inward_node]["scc_paths"].setdefault(outward_node, [])
+            scc.node[inward_node]["scc_paths"][outward_node].append(shortest_path[scc_index][inward_node][outward_node])
 
-            repeated_paths = []
-            _len = len(scc.node[inward_node]["scc_paths"][outward_node])
-            for i in range(0, _len):
-                for j in range(i+1, _len):
-                    if scc.node[inward_node]["scc_paths"][outward_node][i]==scc.node[inward_node]["scc_paths"][outward_node][j]:
-                        repeated_paths.append(i)
-                        break
+            for rest_node in rest_nodes:
+                scc.node[inward_node]["scc_paths"][outward_node].append(shortest_path[scc_index][inward_node][rest_node][:-1] + shortest_path[scc_index][rest_node][outward_node])
 
-            scc.node[inward_node]["scc_paths"][outward_node] = [scc.node[inward_node]["scc_paths"][outward_node][i] for i in range(0, _len) if i not in repeated_paths]
+            # should we check this ?????
+            repeated_indexes = []
+            for i in range(0, len(scc.node[inward_node]["scc_paths"][outward_node])):
+                if scc.node[inward_node]["scc_paths"][outward_node][i] in scc.node[inward_node]["scc_paths"][outward_node][:i]:
+                    repeated_indexes.append(i)
+
+            scc.node[inward_node]["scc_paths"][outward_node] = [scc.node[inward_node]["scc_paths"][outward_node][i] for i in range(0, len(scc.node[inward_node]["scc_paths"][outward_node])) if i not in repeated_indexes]
 
     return
 
