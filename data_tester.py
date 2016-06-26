@@ -8,7 +8,7 @@ import os
 import time
 import datetime
 import shutil
-
+import math
 
 def test_once(tester_num=5):
 
@@ -38,7 +38,15 @@ def test_once(tester_num=5):
                 _ggg, output_paths = generate_patterns(input_type, scc_type, condense_type)
                 output_patterns(filename, _ggg, output_paths, 1)
 
+                test_cases_matching = {}
+                with open("./test_patterns/"+filename, "r") as test_file:
+                    for line in test_file:
+                        utf8line = line.encode("utf-8")
+                        test_cases_matching.setdefault(utf8line, set())
+                    test_file.close()
+
                 exploit_count = 0
+                i = 0
                 for exploitable_regex in exploitable_regexes:
                     try:
                         cmd_line = ["grep", "-E", "\"^"+exploitable_regex+"$\"", "./test_patterns/"+filename]
@@ -60,9 +68,29 @@ def test_once(tester_num=5):
                             #print "wrong again?????"
                         else:
                             print "error occurs when using \"" + " ".join(cmd_line) + "\""
-    
+
+                    for pass_case in result.split("\n")[:-1]
+                        utf8case = pass_case.encode("utf-8")
+                        test_cases_matching[utf8case].add(i)
+                    i = i + 1
+
+                same_count = 0
+                repeat_count = 0
+                sets = test_cases_matching.values()
+                for i in range(0, len(sets)):
+                    for j in range(0, len(sets)):
+                        if i==j:
+                            continue
+                        if sets[i].issubset(sets[j]):
+                            if sets[i].issuperset(sets[j]): # same set
+                                same_count = same_count + 1
+                            repeat_count = repeat_count + 1
+
+                k = repeat_count - same_count
+                repeat_count = k + int(math.floor(math.sqrt(repeat_count-k)))
+ 
                 print (exploit_count, len(exploitable_regexes))
-                results[filename] = [exploit_count, len(exploitable_regexes)]
+                results[filename] = [exploit_count, len(exploitable_regexes), repeat_count, len(test_cases_matching.keys())]
 
     ts = time.time()
     st = datetime.datetime.fromtimestamp(ts).strftime('%Y-%m-%d-%H-%M-%S')
@@ -77,12 +105,10 @@ def test_once(tester_num=5):
             for condense_type in condense_types:
                 filename = input_type + "." + scc_type + "." + condense_type + ".patterns"
                 shutil.copyfile("./test_patterns/"+filename, "./evaluation_patterns/" + st + "/" +filename)
-    
-                csvf.write(",")
-                count_list = results[filename]
-                csvf.write(str(count_list[0]))
-                csvf.write(",")
-                csvf.write(str(count_list[1]))
+
+                for vvv in results[filename]:    
+                    csvf.write(",")
+                    csvf.write(str(vvv))
     
         csvf.close()
 

@@ -2,6 +2,8 @@ input_types = ["tel", "url", "email", "date", "time", "number", "range", "color"
 scc_types = ["shortest", "fakesaleman", "radiation"]
 condense_types = ["simplybfs", "allbranch", "allcover"]
 
+value_num = 4
+
 for input_type in input_types:
     csvf = open("./evaluation_patterns/"+input_type+"_results.csv", "w")
     csvf.write("timestamp")
@@ -9,7 +11,8 @@ for input_type in input_types:
         for condense_type in condense_types:
             csvf.write(",")
             csvf.write(scc_type+"+"+condense_type)
-            csvf.write(",")
+            for i in range(0, value_num-1):
+                csvf.write(",")
     csvf.write("\n")
     csvf.close()
 
