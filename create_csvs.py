@@ -1,6 +1,6 @@
 input_types = ["tel", "url", "email", "date", "time", "number", "range", "color"]
 scc_types = ["shortest", "fakesaleman", "radiation"]
-condense_types = ["simplybfs", "allbranch", "allcover"]
+condense_types = ["shortest", "simplybfs", "simplydfs", "allcoverbfs", "allcoverdfs"]
 
 value_num = 5
 
