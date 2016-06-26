@@ -2,7 +2,7 @@ input_types = ["tel", "url", "email", "date", "time", "number", "range", "color"
 scc_types = ["shortest", "fakesaleman", "radiation"]
 condense_types = ["simplybfs", "allbranch", "allcover"]
 
-value_num = 4
+value_num = 5
 
 for input_type in input_types:
     csvf = open("./evaluation_patterns/"+input_type+"_results.csv", "w")

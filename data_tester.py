@@ -78,10 +78,14 @@ def test_once(tester_num=5):
                         utf8case = pass_case.encode("utf-8")
                         test_cases_matching[utf8case].add(i)
 
+                unused_count = 0
                 repeat_count = 0
                 sets = test_cases_matching.values()
                 issub_list = [0]*len(sets)
                 for i in range(0, len(sets)):
+                    if len(sets[i])==0:
+                        unused_count = unused_count + 1
+
                     for j in range(0, len(sets)):
                         if i==j or issub_list[i]==1:
                             continue
@@ -90,8 +94,8 @@ def test_once(tester_num=5):
 
                 sub_sets = [i for i in issub_list if i==0]
  
-                print [exploit_count, len(exploitable_regexes), len(sub_sets), len(test_cases_matching.keys())]
-                results[filename] = [exploit_count, len(exploitable_regexes), len(sub_sets), len(test_cases_matching.keys())]
+                print [exploit_count, len(exploitable_regexes), unused_count, len(sub_sets), len(test_cases_matching.keys())]
+                results[filename] = [exploit_count, len(exploitable_regexes), unused_count, len(sub_sets), len(test_cases_matching.keys())]
 
     ts = time.time()
     st = datetime.datetime.fromtimestamp(ts).strftime('%Y-%m-%d-%H-%M-%S')
