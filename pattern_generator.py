@@ -94,7 +94,7 @@ def fsm_graph_process(_g, _sccs, dag_edges, _condenseg, final_sccs, shortest_pat
     output_paths = iterate_condense_paths(_g, _sccs, _condenseg, use_condense_path)
     print "output_paths complete"
 
-    return output_paths
+    return [_path for _path in output_paths if len(_path)>1]
 
 
 def iterate_output(wf, _graph, output_path, pindex, output_str="", inputs_num=1):
@@ -132,12 +132,24 @@ def generate_patterns(_type, scc_type, condense_type):
 
     return _graph, fsm_graph_process(_graph, sccs, dag_edges, condenseg, final_sccs, shortest_paths, scc_type, condense_type)
 
-def output_patterns(filename, _graph, _output_paths, times=1):
+def output_patterns(filename, _graph, _output_paths, _max):
     with open("./test_patterns/" + filename, "w") as wf:
-        for i in range(0, times):
-            for output_path in _output_paths:
-                #wf.write(str(output_path) + "\n")
-                iterate_output(wf, _graph, output_path, 0, "")
+        _num = _max
+        while True:
+            if _num<=0:
+                break
+
+            if _num>=len(_output_paths):
+                for output_path in _output_paths:
+                    #wf.write(str(output_path) + "\n")
+                    iterate_output(wf, _graph, output_path, 0, "")
+            else:
+                _temp_paths = random.sample(_output_paths, _num)
+                for output_path in _temp_paths:
+                    #wf.write(str(output_path) + "\n")
+                    iterate_output(wf, _graph, output_path, 0, "")
+
+            _num = _num - len(_output_paths)
 
         wf.close()
 

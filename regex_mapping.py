@@ -5,6 +5,7 @@ import json
 import io
 import sys
 import os
+import timeit
 
 mapping = {
     "tel": "((\((0|\+886)2\)[0-9]{4}-[0-9]{4})|((0|\+886)9[0-9]{8}))",
@@ -21,6 +22,8 @@ with open("parsed.fsms", "w") as fsmf:
     valid_dict = {}
     invalid_dict = {}
     for _type, _regex in mapping.iteritems():
+        start_time = timeit.default_timer()
+
         if _regex == "":
             continue
 
@@ -69,6 +72,9 @@ with open("parsed.fsms", "w") as fsmf:
                 continue
             edges["anything_else"] = edges[anything_else]
             del edges[anything_else]
+
+        elapsed = timeit.default_timer() - start_time
+        print (_type, elapsed)
 
     json_str = json.dumps({"valid_fsms": valid_dict, "invalid_fsms": invalid_dict})
     fsmf.write(json_str)

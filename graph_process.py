@@ -163,9 +163,9 @@ def scc_process(_sccs, shortest_paths, _type="shortest"):
     for i in range(0, len(_sccs)):
         if _type=="shortest":
             find_shortest_paths(_sccs[i], i, shortest_paths)
-        elif _type=="fakesaleman":
+        elif _type=="all-vertices-covered":
             find_fake_saleman_paths(_sccs[i], i, shortest_paths)
-        elif _type=="radiation":
+        elif _type=="tripartie":
             radiation_and_pack_paths(_sccs[i], i, shortest_paths)
 
     return

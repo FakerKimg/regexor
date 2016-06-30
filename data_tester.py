@@ -25,8 +25,21 @@ def test_once(tester_num=5):
 
 
     input_types = ["tel", "url", "email", "date", "time", "number", "range", "color"]
-    scc_types = ["shortest", "fakesaleman", "radiation"]
+    scc_types = ["shortest", "all-vertices-covered", "tripartie"]
     condense_types = ["shortest", "simplybfs", "simplydfs", "allcoverbfs", "allcoverdfs"]
+
+    for input_type in input_types:
+        output_pathss = {}
+        for scc_type in scc_types:
+            for condense_type in condense_types:
+                filename = input_type + "." + scc_type + "." + condense_type + ".patterns"
+                print filename
+                _ggg, output_paths = generate_patterns(input_type, scc_type, condense_type)
+                output_pathss[filename] = (_ggg, output_paths)
+
+        #_num = max([len(ops[1]) for ops in output_pathss.values()])
+        for fn, obj in output_pathss.iteritems():
+            output_patterns(fn, obj[0], obj[1], len(obj[1]))
 
     results = {}
     for input_type in input_types:
@@ -34,15 +47,14 @@ def test_once(tester_num=5):
         for scc_type in scc_types:
             for condense_type in condense_types:
                 filename = input_type + "." + scc_type + "." + condense_type + ".patterns"
-                print filename
-                _ggg, output_paths = generate_patterns(input_type, scc_type, condense_type)
-                output_patterns(filename, _ggg, output_paths, 1)
 
+                cases_count = 0
                 test_cases_matching = {}
                 with open("./test_patterns/"+filename, "r") as test_file:
                     for line in test_file:
                         utf8line = line[:-1].encode("utf-8")
                         test_cases_matching.setdefault(utf8line, set())
+                        cases_count = cases_count + 1
                     test_file.close()
 
                 exploit_count = 0
@@ -92,10 +104,11 @@ def test_once(tester_num=5):
                         if sets[i].issubset(sets[j]):
                             issub_list[i] = 1
 
-                sub_sets = [i for i in issub_list if i==0]
- 
-                print [exploit_count, len(exploitable_regexes), unused_count, len(sub_sets), len(test_cases_matching.keys())]
-                results[filename] = [exploit_count, len(exploitable_regexes), unused_count, len(sub_sets), len(test_cases_matching.keys())]
+                sub_sets = [i for i in issub_list if i==1]
+
+                print filename
+                print [exploit_count, len(exploitable_regexes), unused_count, len(sub_sets), cases_count]
+                results[filename] = [exploit_count, len(exploitable_regexes), unused_count, len(sub_sets), cases_count]
 
     ts = time.time()
     st = datetime.datetime.fromtimestamp(ts).strftime('%Y-%m-%d-%H-%M-%S')
