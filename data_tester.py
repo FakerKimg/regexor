@@ -63,7 +63,7 @@ def test_once(tester_num=5):
                 invalid_cases_matching = {}
                 with open("./test_patterns/"+filename, "r") as test_file:
                     for line in test_file:
-                        utf8line = line[:-1].encode("utf-8")
+                        utf8line = line[:-1].encode("utf-8") if line[-1]=='\n' else line
                         invalid_cases_matching.setdefault(utf8line, set())
                         invalid_cases_count = invalid_cases_count + 1
                     test_file.close()
@@ -97,12 +97,13 @@ def test_once(tester_num=5):
                 valid_cases_matching = {}
                 with open("./test_patterns/"+filename, "r") as test_file:
                     for line in test_file:
-                        utf8line = line[:-1].encode("utf-8")
+                        utf8line = line[:-1].encode("utf-8") if line[-1]=='\n' else line
                         valid_cases_matching.setdefault(utf8line, set())
                         valid_cases_count = valid_cases_count + 1
                     test_file.close()
 
                 false_negative = 0
+                i = 0
                 for exploitable_regex in exploitable_regexes:
                     try:
                         cmd_line = ["grep", "-E", "\"^"+exploitable_regex+"$\"", "./test_patterns/"+filename]
@@ -122,6 +123,10 @@ def test_once(tester_num=5):
                             utf8case = pass_case.encode("utf-8")
                             valid_cases_matching[utf8case].add(i)
 
+                    i = i + 1
+
+
+                # redundancy calculation
 
                 invalid_unused_count = 0
                 sets = invalid_cases_matching.values()
@@ -156,9 +161,9 @@ def test_once(tester_num=5):
 
 
                 print input_type + "." + scc_type + "." + condense_type
-                print [len(exploitable_regexes), false_positive, invalid_cases_count, invalid_unused_count, len(invalid_sub_sets), false_negative, valid_cases_count, valid_unused_count]
+                print [len(exploitable_regexes), false_positive, invalid_cases_count, invalid_unused_count, len(invalid_sub_sets), false_negative, valid_cases_count, valid_unused_count, len(valid_sub_sets)]
                 #results[input_type + "." + scc_type + "." + condense_type] = [exploit_count, len(exploitable_regexes), unused_count, len(sub_sets), cases_count]
-                results[input_type + "." + scc_type + "." + condense_type] = [len(exploitable_regexes), false_positive, invalid_cases_count, invalid_unused_count, len(invalid_sub_sets), false_negative, valid_cases_count, valid_unused_count]
+                results[input_type + "." + scc_type + "." + condense_type] = [len(exploitable_regexes), false_positive, invalid_cases_count, invalid_unused_count, len(invalid_sub_sets), false_negative, valid_cases_count, valid_unused_count, len(valid_sub_sets)]
 
 
 
