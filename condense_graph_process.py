@@ -34,13 +34,17 @@ def find_continue_path(condenseg, condense_tree, leaf):
     sub_tree = networkx.bfs_tree(condense_tree, next_node)
     sub_leaves = [node for node in sub_tree.nodes() if sub_tree.out_degree(node)==0 and sub_tree.in_degree(node)==1]
     for sub_leaf in sub_leaves:
-        if "_final" in sub_leaf:
+        if "_final" in str(sub_leaf):
             condense_tree.node[leaf]["continue_path"] = [leaf] + networkx.shortest_path(condense_tree, next_node, sub_leaf)
             return
         else:
             find_continue_path(condenseg, condense_tree, sub_leaf)
 
-    condense_tree.node[leaf]["continue_path"] = [leaf] + networkx.shortest_path(condense_tree, next_node, sub_leaves[0])  + condense_tree.node[sub_leaves[0]]["continue_path"][1:] # choose any one sub leaf, sub_leaf is the last of sub_leaves ??????????
+    if len(sub_leaves)==0:
+        find_continue_path(condenseg, condense_tree, next_node)
+        condense_tree.node[leaf]["continue_path"] = [leaf] + condense_tree.node[next_node]["continue_path"] # choose any one sub leaf, sub_leaf is the last of sub_leaves ??????????
+    else:
+        condense_tree.node[leaf]["continue_path"] = [leaf] + networkx.shortest_path(condense_tree, next_node, sub_leaves[0])  + condense_tree.node[sub_leaves[0]]["continue_path"][1:] # choose any one sub leaf, sub_leaf is the last of sub_leaves ??????????
 
     return
 

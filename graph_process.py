@@ -146,7 +146,7 @@ def radiation_and_pack_paths(scc, scc_index, shortest_paths):
             scc.node[inward_node]["scc_paths"][outward_node].append(shortest_paths[scc_index][inward_node][outward_node])
 
             for rest_node in rest_nodes:
-                scc.node[inward_node]["scc_paths"][outward_node].append(shortest_path[scc_index][inward_node][rest_node][:-1] + shortest_path[scc_index][rest_node][outward_node])
+                scc.node[inward_node]["scc_paths"][outward_node].append(shortest_paths[scc_index][inward_node][rest_node][:-1] + shortest_paths[scc_index][rest_node][outward_node])
 
             # should we check this ?????
             repeated_indexes = []

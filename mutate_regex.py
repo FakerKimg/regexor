@@ -112,9 +112,11 @@ def find_extensible_legos(origin_pattern):
             _legos.append(_legos[0].multiplier)
 
             if isinstance(_legos[0].multiplicand, charclass):
-                origin_charclasses_parents.append(_legos[0])
+                if not (len(_legos[0].multiplicand.chars)==1 and not _legos[0].multiplicand.negated):
+                    origin_charclasses_parents.append(_legos[0])
             if _legos[0].multiplier.min.v>0 or _legos[0].multiplier.max.v!=None:
-                origin_multipliers_parents.append(_legos[0])
+                if _legos[0].multiplier.min.v!=_legos[0].multiplier.max.v:
+                    origin_multipliers_parents.append(_legos[0])
         elif isinstance(_legos[0], charclass):
             #origin_charclasses.append(_legos[0])
             pass
@@ -131,7 +133,14 @@ def create_invalid_patterns(valid_pattern, origin_charclasses_parents, origin_mu
     if parent_index < len(origin_charclasses_parents): # deal with charclass
         parent_mult = origin_charclasses_parents[parent_index]
         origin_charclass = parent_mult.__dict__["multiplicand"]
-        parent_mult.__dict__["multiplicand"] = charclass("", True) # .
+
+        ccs = list(origin_charclass.chars)
+        anti_charclass = charclass(ccs, True)
+        ccs = random.sample(ccs, len(ccs)/2)
+        mutated_charclass = anti_charclass.union(charclass(ccs))
+        parent_mult.__dict__["multiplicand"] = mutated_charclass
+        #parent_mult.__dict__["multiplicand"] = charclass("", True)
+
         create_invalid_patterns(valid_pattern, origin_charclasses_parents, origin_multipliers_parents, parent_index+1, invalid_patterns) # muted
         parent_mult.__dict__["multiplicand"] = origin_charclass
         create_invalid_patterns(valid_pattern, origin_charclasses_parents, origin_multipliers_parents, parent_index+1, invalid_patterns) # non-muted
@@ -141,7 +150,14 @@ def create_invalid_patterns(valid_pattern, origin_charclasses_parents, origin_mu
     else: # deal with multipliers
         parent_mult = origin_multipliers_parents[parent_index-len(origin_charclasses_parents)]
         origin_multiplier = parent_mult.__dict__["multiplier"]
-        parent_mult.__dict__["multiplier"] = multiplier.match("*")[0] # .
+
+        #parent_mult.__dict__["multiplier"] = multiplier.match("*")[0] # *
+        if origin_multiplier.max.v==None:
+            parent_mult.__dict__["multiplier"] = multiplier.match("*")[0] # *
+        else:
+            _num = (origin_multiplier.max.v+origin_multiplier.min.v+1)/2
+            parent_mult.__dict__["multiplier"] = multiplier.match("{"+str(_num)+",}")[0]
+
         create_invalid_patterns(valid_pattern, origin_charclasses_parents, origin_multipliers_parents, parent_index+1, invalid_patterns) # muted
         parent_mult.__dict__["multiplier"] = origin_multiplier
         create_invalid_patterns(valid_pattern, origin_charclasses_parents, origin_multipliers_parents, parent_index+1, invalid_patterns) # non-muted
@@ -156,13 +172,13 @@ def create_invalid_regexes(valid_regex, breach_num=5):
     # find 10 extensible regexes
     try:
         chosen_num = random.sample(range(0, len(origin_charclasses_parents)), breach_num)
-        origin_charclasses_parents = [origin_charclasses_parents[i] for i in range(0, len(origin_charclasses_parents)) if i in chosen_num]
+        origin_charclasses_parents = [origin_charclasses_parents[i] for i in chosen_num]
     except:
         pass
 
     try:
         chosen_num = random.sample(range(0, len(origin_multipliers_parents)), breach_num)
-        origin_multipliers_parents = [origin_multipliers_parents[i] for i in range(0, len(origin_multipliers_parents)) if i in chosen_num]
+        origin_multipliers_parents = [origin_multipliers_parents[i] for i in chosen_num]
     except:
         pass
 

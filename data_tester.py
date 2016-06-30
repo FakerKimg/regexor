@@ -32,48 +32,54 @@ def test_once(tester_num=5):
         output_pathss = {}
         for scc_type in scc_types:
             for condense_type in condense_types:
-                filename = input_type + "." + scc_type + "." + condense_type + ".patterns"
+                filename = input_type + "." + scc_type + "." + condense_type + ".invalids"
                 print filename
-                _ggg, output_paths = generate_patterns(input_type, scc_type, condense_type)
+                _ggg, output_paths = generate_patterns(input_type, scc_type, condense_type, False)
                 output_pathss[filename] = (_ggg, output_paths)
 
-        #_num = max([len(ops[1]) for ops in output_pathss.values()])
         for fn, obj in output_pathss.iteritems():
             output_patterns(fn, obj[0], obj[1], len(obj[1]))
+
+
+        for scc_type in scc_types:
+            for condense_type in condense_types:
+                filename = input_type + "." + scc_type + "." + condense_type + ".valids"
+                print filename
+                _ggg, output_paths = generate_patterns(input_type, scc_type, condense_type, True)
+                output_pathss[filename] = (_ggg, output_paths)
+
+        for fn, obj in output_pathss.iteritems():
+            output_patterns(fn, obj[0], obj[1], len(obj[1]))
+
 
     results = {}
     for input_type in input_types:
         exploitable_regexes = create_invalid_regexes(mapping[input_type], tester_num)
         for scc_type in scc_types:
             for condense_type in condense_types:
-                filename = input_type + "." + scc_type + "." + condense_type + ".patterns"
-
-                cases_count = 0
-                test_cases_matching = {}
+                # invalid cases
+                filename = input_type + "." + scc_type + "." + condense_type + ".invalids"
+                invalid_cases_count = 0
+                invalid_cases_matching = {}
                 with open("./test_patterns/"+filename, "r") as test_file:
                     for line in test_file:
                         utf8line = line[:-1].encode("utf-8")
-                        test_cases_matching.setdefault(utf8line, set())
-                        cases_count = cases_count + 1
+                        invalid_cases_matching.setdefault(utf8line, set())
+                        invalid_cases_count = invalid_cases_count + 1
                     test_file.close()
 
-                exploit_count = 0
+                false_positive = 0
                 i = 0
                 for exploitable_regex in exploitable_regexes:
-                    result = None
                     try:
                         cmd_line = ["grep", "-E", "\"^"+exploitable_regex+"$\"", "./test_patterns/"+filename]
                         cmd_line = [" ".join(cmd_line)]
-    
-                        """
-                        ppp = os.popen(" ".join(cmd_line), "r")
-                        if ppp.readline()!="":
-                            exploit_count = exploit_count + 1
-                        """
-    
                         result = subprocess.check_output(cmd_line, shell=True)
                         if result!="":
-                            exploit_count = exploit_count + 1
+                            false_positive = false_positive + 1
+                            for pass_case in result.split("\n")[:-1]:
+                                utf8case = pass_case.encode("utf-8")
+                                invalid_cases_matching[utf8case].add(i)
 
                     except Exception as e:
                         if e.returncode==1 and e.output=="": # match empty
@@ -83,20 +89,46 @@ def test_once(tester_num=5):
                             print "error occurs when using \"" + " ".join(cmd_line) + "\""
 
                     i = i + 1
-                    if not result:
-                        continue
 
-                    for pass_case in result.split("\n")[:-1]:
-                        utf8case = pass_case.encode("utf-8")
-                        test_cases_matching[utf8case].add(i)
 
-                unused_count = 0
-                repeat_count = 0
-                sets = test_cases_matching.values()
+                # valid cases
+                filename = input_type + "." + scc_type + "." + condense_type + ".valids"
+                valid_cases_count = 0
+                valid_cases_matching = {}
+                with open("./test_patterns/"+filename, "r") as test_file:
+                    for line in test_file:
+                        utf8line = line[:-1].encode("utf-8")
+                        valid_cases_matching.setdefault(utf8line, set())
+                        valid_cases_count = valid_cases_count + 1
+                    test_file.close()
+
+                false_negative = 0
+                for exploitable_regex in exploitable_regexes:
+                    try:
+                        cmd_line = ["grep", "-E", "\"^"+exploitable_regex+"$\"", "./test_patterns/"+filename]
+                        cmd_line = [" ".join(cmd_line)]
+                        result = subprocess.check_output(cmd_line, shell=True)
+                        resultss = result.split("\n")[:-1]
+
+                    except Exception as e:
+                        if e.returncode==1 and e.output=="": # match empty
+                            resultss = []
+                        else:
+                            print "error occurs when using \"" + " ".join(cmd_line) + "\""
+
+                    if len(resultss)!=valid_cases_count:
+                        false_negative = false_negative + 1
+                        for pass_case in resultss:
+                            utf8case = pass_case.encode("utf-8")
+                            valid_cases_matching[utf8case].add(i)
+
+
+                invalid_unused_count = 0
+                sets = invalid_cases_matching.values()
                 issub_list = [0]*len(sets)
                 for i in range(0, len(sets)):
                     if len(sets[i])==0:
-                        unused_count = unused_count + 1
+                        invalid_unused_count = invalid_unused_count + 1
 
                     for j in range(0, len(sets)):
                         if i==j or issub_list[i]==1:
@@ -104,16 +136,39 @@ def test_once(tester_num=5):
                         if sets[i].issubset(sets[j]):
                             issub_list[i] = 1
 
-                sub_sets = [i for i in issub_list if i==1]
+                invalid_sub_sets = [i for i in issub_list if i==1]
 
-                print filename
-                print [exploit_count, len(exploitable_regexes), unused_count, len(sub_sets), cases_count]
-                results[filename] = [exploit_count, len(exploitable_regexes), unused_count, len(sub_sets), cases_count]
+
+                valid_unused_count = 0
+                sets = valid_cases_matching.values()
+                issub_list = [0]*len(sets)
+                for i in range(0, len(sets)):
+                    if len(sets[i])==0:
+                        valid_unused_count = valid_unused_count + 1
+
+                    for j in range(0, len(sets)):
+                        if i==j or issub_list[i]==1:
+                            continue
+                        if sets[i].issubset(sets[j]):
+                            issub_list[i] = 1
+
+                valid_sub_sets = [i for i in issub_list if i==1]
+
+
+                print input_type + "." + scc_type + "." + condense_type
+                print [len(exploitable_regexes), false_positive, invalid_cases_count, invalid_unused_count, len(invalid_sub_sets), false_negative, valid_cases_count, valid_unused_count]
+                #results[input_type + "." + scc_type + "." + condense_type] = [exploit_count, len(exploitable_regexes), unused_count, len(sub_sets), cases_count]
+                results[input_type + "." + scc_type + "." + condense_type] = [len(exploitable_regexes), false_positive, invalid_cases_count, invalid_unused_count, len(invalid_sub_sets), false_negative, valid_cases_count, valid_unused_count]
+
+
+
+
+
+
 
     ts = time.time()
     st = datetime.datetime.fromtimestamp(ts).strftime('%Y-%m-%d-%H-%M-%S')
     os.mkdir("./evaluation_patterns/" + st)
-
 
     for input_type in input_types:
         csvf = open("./evaluation_patterns/"+input_type+"_results.csv", "a")
@@ -121,10 +176,12 @@ def test_once(tester_num=5):
         csvf.write(st)
         for scc_type in scc_types:
             for condense_type in condense_types:
-                filename = input_type + "." + scc_type + "." + condense_type + ".patterns"
+                filename = input_type + "." + scc_type + "." + condense_type + ".valids"
+                shutil.copyfile("./test_patterns/"+filename, "./evaluation_patterns/" + st + "/" +filename)
+                filename = input_type + "." + scc_type + "." + condense_type + ".invalids"
                 shutil.copyfile("./test_patterns/"+filename, "./evaluation_patterns/" + st + "/" +filename)
 
-                for vvv in results[filename]:    
+                for vvv in results[input_type + "." + scc_type + "." + condense_type]:
                     csvf.write(",")
                     csvf.write(str(vvv))
     
