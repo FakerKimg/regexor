@@ -135,11 +135,16 @@ def test_once(tester_num=5):
                     if len(sets[i])==0:
                         invalid_unused_count = invalid_unused_count + 1
 
+                    if issub_list[i]==1:
+                        continue
+
                     for j in range(0, len(sets)):
-                        if i==j or issub_list[i]==1:
+                        if i==j:
                             continue
                         if sets[i].issubset(sets[j]):
                             issub_list[i] = 1
+                            break
+
 
                 invalid_sub_sets = [i for i in issub_list if i==1]
 
@@ -151,11 +156,15 @@ def test_once(tester_num=5):
                     if len(sets[i])==0:
                         valid_unused_count = valid_unused_count + 1
 
+                    if issub_list[i]==1:
+                        continue
+
                     for j in range(0, len(sets)):
-                        if i==j or issub_list[i]==1:
+                        if i==j:
                             continue
                         if sets[i].issubset(sets[j]):
                             issub_list[i] = 1
+                            break
 
                 valid_sub_sets = [i for i in issub_list if i==1]
 
