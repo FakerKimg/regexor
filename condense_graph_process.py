@@ -42,9 +42,9 @@ def find_continue_path(condenseg, condense_tree, leaf):
 
     if len(sub_leaves)==0:
         find_continue_path(condenseg, condense_tree, next_node)
-        condense_tree.node[leaf]["continue_path"] = [leaf] + condense_tree.node[next_node]["continue_path"] # choose any one sub leaf, sub_leaf is the last of s
+        condense_tree.node[leaf]["continue_path"] = [leaf] + condense_tree.node[next_node]["continue_path"] # choose any one sub leaf, sub_leaf is the last of sub_leaves ??????????
     else:
-        condense_tree.node[leaf]["continue_path"] = [leaf] + networkx.shortest_path(condense_tree, next_node, sub_leaves[0])  + condense_tree.node[sub_leaves[0]
+        condense_tree.node[leaf]["continue_path"] = [leaf] + networkx.shortest_path(condense_tree, next_node, sub_leaves[0]) + condense_tree.node[sub_leaves[0]]["continue_path"][1:] # choose any one sub leaf, sub_leaf is the last of sub_leaves ??????????
 
     return
 
