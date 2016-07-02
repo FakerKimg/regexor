@@ -121,11 +121,11 @@ def test_once(tester_num=5):
                             result_patterns = [pattern.encode("utf-8") for pattern in result.split("\n")[:-1]]
                             for valid_case in valid_cases:
                                 if valid_case not in result_patterns:
-                                    test_cases_not_matching[invalid_case].add(i)
+                                    test_cases_not_matching[valid_case].add(i)
                     except Exception as e:
                         if e.returncode==1 and e.output=="": # match empty
                             for valid_case in valid_cases:
-                                test_cases_not_matching[invalid_case].add(i)
+                                test_cases_not_matching[valid_case].add(i)
                         else:
                             print "error occurs when using \"" + cmd_line[0]  + "\""
                             import pdb;pdb.set_trace()
@@ -173,9 +173,9 @@ def test_once(tester_num=5):
 
 
                 print filename + " statisticing"
-                print [exploit_count, find_count, exploitable_regexes, invalid_unused_count, valid_unused_count, len(invalid_issub_sets), len(valid_issub_sets), len(test_cases_matching.keys()),  len(test_cases_not_matching.keys())]
+                print [exploit_count, find_count, len(exploitable_regexes), invalid_unused_count, valid_unused_count, len(invalid_issub_sets), len(valid_issub_sets), len(test_cases_matching.keys()),  len(test_cases_not_matching.keys())]
                 filename = input_type + "." + scc_type + "." + condense_type + ".patterns"
-                results[filename] = [exploit_count, find_count, exploitable_regexes, invalid_unused_count, valid_unused_count, len(invalid_issub_sets), len(valid_issub_sets), len(test_cases_matching.keys()),  len(test_cases_not_matching.keys())]
+                results[filename] = [exploit_count, find_count, len(exploitable_regexes), invalid_unused_count, valid_unused_count, len(invalid_issub_sets), len(valid_issub_sets), len(test_cases_matching.keys()),  len(test_cases_not_matching.keys())]
 
 
 
