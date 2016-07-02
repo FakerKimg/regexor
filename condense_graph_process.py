@@ -124,7 +124,7 @@ def basic_condenseg_process(_graph, sccs, dag_edges):
     for final in _graph.graph["finals"]:
         final_sccs.add(_graph.node[final]["scc_index"])
     final_sccs = list(final_sccs)
-    condenseg.graph["final_sccs"] = finals_sccs
+    condenseg.graph["final_sccs"] = final_sccs
 
     for final_scc in final_sccs:
         condenseg.add_edge(final_scc, str(final_scc)+"_final")

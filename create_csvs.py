@@ -5,7 +5,7 @@ scc_types = ["shortest", "all-vertices-covered", "tripartie"]
 condense_types = ["simplybfs", "simplydfs", "allcoverbfs", "allcoverdfs"]
 
 
-value_num = 5
+value_num = 9
 
 for input_type in input_types:
     csvf = open("./evaluation_patterns/"+input_type+"_results.csv", "w")
