@@ -117,13 +117,16 @@ def test_once(tester_num=5):
                         cmd_line = [" ".join(cmd_line)]
                         result = subprocess.check_output(cmd_line, shell=True)
                         if result!="":
-                            find_count = find_count + 1
+                            found = False
                             result_patterns = [pattern.encode("utf-8") for pattern in result.split("\n")[:-1]]
                             for valid_case in valid_cases:
                                 if valid_case not in result_patterns:
+                                    found = True
                                     test_cases_not_matching[valid_case].add(i)
+                            find_count = find_count + 1 if found else find_count
                     except Exception as e:
                         if e.returncode==1 and e.output=="": # match empty
+                            find_count = find_count + 1
                             for valid_case in valid_cases:
                                 test_cases_not_matching[valid_case].add(i)
                         else:
