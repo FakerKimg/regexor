@@ -44,6 +44,12 @@ def test_once(tester_num=5):
     results = {}
     for input_type in input_types:
         exploitable_regexes = create_invalid_regexes(mapping[input_type], tester_num)
+        with open("./test_patterns/"+input_type+".testers", "w") as trf:
+            for exploitable_regex in exploitable_regexes:
+                trf.write(exploitable_regex)
+                trf.write("\n")
+            trf.close()
+
         for scc_type in scc_types:
             for condense_type in condense_types:
                 filename = input_type + "." + scc_type + "." + condense_type + ".patterns"
@@ -123,6 +129,7 @@ def test_once(tester_num=5):
             for condense_type in condense_types:
                 filename = input_type + "." + scc_type + "." + condense_type + ".patterns"
                 shutil.copyfile("./test_patterns/"+filename, "./evaluation_patterns/" + st + "/" +filename)
+                shutil.copyfile("./test_patterns/"+input_type+".testers", "./evaluation_patterns/"+st+"/"+input_type+".testers")
 
                 for vvv in results[filename]:    
                     csvf.write(",")

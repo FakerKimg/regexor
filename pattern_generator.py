@@ -90,7 +90,8 @@ def fsm_graph_process(_g, _sccs, dag_edges, _condenseg, final_sccs, shortest_pat
     condense_process(_g, _condenseg, final_sccs, condense_type)
 
     initial = _g.graph["initial"]
-    use_condense_path = True if len(dag_edges)*4 > len(_g.edges()) else False # this condition ??????????
+    #use_condense_path = True if len(dag_edges)*4 > len(_g.edges()) else False # this condition ??????????
+    use_condense_path = True
     output_paths = iterate_condense_paths(_g, _sccs, _condenseg, use_condense_path)
     print "output_paths complete"
 
