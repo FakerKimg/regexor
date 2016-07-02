@@ -17,12 +17,9 @@ def basic_graph_process(_graph):
     dag_edges = [edge for edge in _graph.edges() if edge not in not_dag_edges]
 
     # give SCC index to each node, usefull ?????
-    i = 0
-    for scc in sccs:
-        scc_nodes = scc.nodes()
-        for node in scc_nodes:
+    for i in range(0, len(sccs)):
+        for node in sccs[i].nodes():
             _graph.node[node]["scc_index"] = i
-        i = i + 1
 
     # find boundary nodes in each SCC
     for scc in sccs:
@@ -43,7 +40,7 @@ def basic_graph_process(_graph):
         scc.node[edge[1]]["inward_edges"].append(edge)
         scc.graph["inward_nodes"].add(edge[1])
 
-    # initial must be add to inward nodes, add final states if the final state node not outward node
+    # initial must be add to inward nodes, add final states as outward nodes
     initial_index = _graph.graph["initial"]
     sccs[_graph.node[initial_index]["scc_index"]].graph["inward_nodes"].add(initial_index)
     sccs[_graph.node[initial_index]["scc_index"]].node[initial_index].setdefault("inward_edges", [])
