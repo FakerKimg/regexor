@@ -1,7 +1,7 @@
 import re
 from regexfsm.lego import *
 import random
-
+import string
 
 valid_regexes = {
     "tel": "((\((0|\+886)2\)[0-9]{4}-[0-9]{4})|((0|\+886)9[0-9]{8}))",
@@ -70,6 +70,8 @@ def regexfsm_to_str(_lego, for_grep=True):
                     cc = "\\`"
                 elif c=="\"":
                     cc = "\\\""
+                elif c=="$": # grep -E "[${]" ./file will incur error
+                    cc = "\\$"
 
                 result_str = result_str + cc
 
