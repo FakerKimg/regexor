@@ -40,7 +40,11 @@ def find_continue_path(condenseg, condense_tree, leaf):
         else:
             find_continue_path(condenseg, condense_tree, sub_leaf)
 
-    condense_tree.node[leaf]["continue_path"] = [leaf] + networkx.shortest_path(condense_tree, next_node, sub_leaves[0])  + condense_tree.node[sub_leaves[0]]["continue_path"][1:] # choose any one sub leaf, sub_leaf is the last of sub_leaves ??????????
+    if len(sub_leaves)==0:
+        find_continue_path(condenseg, condense_tree, next_node)
+        condense_tree.node[leaf]["continue_path"] = [leaf] + condense_tree.node[next_node]["continue_path"] # choose any one sub leaf, sub_leaf is the last of sub_leaves ??????????
+    else:
+        condense_tree.node[leaf]["continue_path"] = [leaf] + networkx.shortest_path(condense_tree, next_node, sub_leaves[0]) + condense_tree.node[sub_leaves[0]]["continue_path"][1:] # choose any one sub leaf, sub_leaf is the last of sub_leaves ??????????
 
     return
 
@@ -124,6 +128,7 @@ def basic_condenseg_process(_graph, sccs, dag_edges):
     for final in _graph.graph["finals"]:
         final_sccs.add(_graph.node[final]["scc_index"])
     final_sccs = list(final_sccs)
+    condenseg.graph["final_sccs"] = final_sccs
 
     for final_scc in final_sccs:
         condenseg.add_edge(final_scc, str(final_scc)+"_final")
