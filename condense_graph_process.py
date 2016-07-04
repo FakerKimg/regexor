@@ -34,7 +34,7 @@ def find_continue_path(condenseg, condense_tree, leaf):
     sub_tree = networkx.bfs_tree(condense_tree, next_node)
     sub_leaves = [node for node in sub_tree.nodes() if sub_tree.out_degree(node)==0 and sub_tree.in_degree(node)==1]
     for sub_leaf in sub_leaves:
-        if "_final" in sub_leaf:
+        if "_final" in str(sub_leaf):
             condense_tree.node[leaf]["continue_path"] = [leaf] + networkx.shortest_path(condense_tree, next_node, sub_leaf)
             return
         else:

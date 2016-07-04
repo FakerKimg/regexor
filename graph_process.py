@@ -170,3 +170,39 @@ def scc_process(_sccs, shortest_paths, _type="shortest"):
 
     return
 
+
+
+def expand_invalid_graph(validg, invalidg, dead_state):
+    g = networkx.DiGraph()
+    g.graph["initial"] = invalidg.graph["initial"]
+    g.graph["alphabet"] = invalidg.graph["alphabet"]
+
+    finals_set = set([final for final in invalidg.graph["finals"] if final!=dead_state])
+
+    # copy edges and nodes from validg
+    for edge in validg.edges():
+        g.add_edge("valid_"+str(edge[0]), "valid_"+str(edge[1]), validg.edge[edge[0]][edge[1]])
+
+    for final in validg.graph["finals"]:
+        finals_set.add("valid_"+str(final))
+
+    # copy edges and nodes from invalidg
+    not_dead_edges = [edge for edge in invalidg.edges() if edge[1]!=dead_state]
+    dead_edges = [edge for edge in invalidg.edges() if edge[1]==dead_state and edge[0]!=dead_state]
+
+    for edge in not_dead_edges:
+        g.add_edge(edge[0], edge[1], invalidg.edge[edge[0]][edge[1]])
+
+    # process the edge to dead state
+    for dead_edge in dead_edges:
+        g.add_edge(dead_edge[0], "dead_"+str(dead_edge[0]), dict(invalidg.edge[dead_edge[0]][dead_edge[1]]) )
+        for enode in invalidg.edge[dead_edge[0]].keys():
+            if enode==dead_state:
+                continue
+            valid_node = enode if enode<dead_state else enode-1
+            g.add_edge("dead_"+str(dead_edge[0]), "valid_"+str(valid_node), {"_inputs": []})
+
+    g.graph["finals"] = list(finals_set)
+    return g
+
+

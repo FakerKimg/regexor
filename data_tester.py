@@ -34,7 +34,7 @@ def test_once(tester_num=5):
             for condense_type in condense_types:
                 filename = input_type + "." + scc_type + "." + condense_type + ".patterns"
                 print filename
-                _ggg, output_paths = generate_patterns(input_type, scc_type, condense_type)
+                _ggg, output_paths = generate_patterns(input_type, scc_type, condense_type, False)
                 output_pathss[filename] = (_ggg, output_paths)
 
         #_num = max([len(ops[1]) for ops in output_pathss.values()])

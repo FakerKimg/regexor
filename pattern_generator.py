@@ -110,6 +110,11 @@ def iterate_output(wf, _graph, output_path, pindex, output_str="", inputs_num=1)
 
     #possible_inputs = extract_edge_inputs((output_path[pindex], output_path[pindex+1]))
     possible_inputs = list(_graph.edge[output_path[pindex]][output_path[pindex+1]]["_inputs"])
+    if len(possible_inputs)==0: # edge that dead_xx -> valid_??
+        assert("dead_" in output_path[pindex])
+        assert("valid_" in output_path[pindex+1])
+        iterate_output(wf, _graph, output_path, pindex+1, output_str, inputs_num)
+        return
     num = 0
     while True:
         if num==inputs_num or len(possible_inputs)==0:
@@ -125,8 +130,21 @@ def iterate_output(wf, _graph, output_path, pindex, output_str="", inputs_num=1)
 
     return
 
-def generate_patterns(_type, scc_type, condense_type):
-    valid_graph, _graph = fsm_graph_transition(_type)
+def generate_patterns(_type, scc_type, condense_type, valid):
+    dead_state_index = {
+        "tel": 2,
+        "url": 1,
+        "email": 2,
+        "date": 1,
+        "time": 1,
+        "number": 4,
+        "range": 4,
+        "color": 2,
+    } # use dead_state_check.py to check
+
+
+    valid_graph, invalid_graph = fsm_graph_transition(_type)
+    _graph = valid_graph if valid else expand_invalid_graph(valid_graph, invalid_graph, dead_state_index[_type])
     sccs, dag_edges = basic_graph_process(_graph)
     condenseg, final_sccs = basic_condenseg_process(_graph, sccs, dag_edges)
     shortest_paths = create_shortest_path(sccs)
