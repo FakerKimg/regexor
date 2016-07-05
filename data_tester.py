@@ -10,7 +10,7 @@ import datetime
 import shutil
 import math
 
-def test_once(tester_num=5):
+def test_once(_patterns, tester_num=5):
 
     mapping = {
         "tel": "((\((0|\+886)2\)[0-9]{4}-[0-9]{4})|((0|\+886)9[0-9]{8}))",
@@ -33,15 +33,11 @@ def test_once(tester_num=5):
             for condense_type in condense_types:
                 # generate invalid graph, generate test patterns and write into file
                 filename = input_type + "." + scc_type + "." + condense_type + ".invalids"
-                print filename + " generating patterns"
-                _ggg, output_paths = generate_patterns(input_type, scc_type, condense_type, False)
-                output_patterns(filename, _ggg, output_paths, len(output_paths))
+                output_patterns(filename, _patterns[filename]["graph"], _patterns[filename]["output_paths"], len(_patterns[filename]["output_paths"]))
 
                 # generate invalid graph, generate test patterns and write into file
                 filename = input_type + "." + scc_type + "." + condense_type + ".valids"
-                print filename + " generating patterns"
-                _ggg, output_paths = generate_patterns(input_type, scc_type, condense_type, True)
-                output_patterns(filename, _ggg, output_paths, len(output_paths))
+                output_patterns(filename, _patterns[filename]["graph"], _patterns[filename]["output_paths"], len(_patterns[filename]["output_paths"]))
 
     results = {}
     for input_type in input_types:
@@ -52,7 +48,6 @@ def test_once(tester_num=5):
                 trf.write(exploitable_regex)
                 trf.write("\n")
             trf.close()
-
 
 
         # start to test each invalid pattern
