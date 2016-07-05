@@ -115,7 +115,7 @@ def iterate_output(wf, _graph, output_path, pindex, output_str="", inputs_num=1)
             possible_inputs = list(_graph.edge[output_path[i]][output_path[i+1]]["_inputs"])
             if len(possible_inputs)==0:
                 assert("dead_" in output_path[i])
-                assert("valid_" in output_path[i+1])
+                assert(output_path[i+1].startswith(output_path[i]))
                 continue
 
             selected_input = random.sample(possible_inputs, 1)[0]
@@ -131,9 +131,9 @@ def iterate_output(wf, _graph, output_path, pindex, output_str="", inputs_num=1)
     #possible_inputs = extract_edge_inputs((output_path[pindex], output_path[pindex+1]))
     possible_inputs = list(_graph.edge[output_path[pindex]][output_path[pindex+1]]["_inputs"])
 
-    if len(possible_inputs)==0: # edge that dead_xx -> valid_??
+    if len(possible_inputs)==0: # edge that dead_xx -> dead_xx_??_::
         assert("dead_" in output_path[pindex])
-        assert("valid_" in output_path[pindex+1])
+        assert(output_path[pindex+1].startswith(output_path[pindex]))
         iterate_output(wf, _graph, output_path, pindex+1, output_str, inputs_num)
         return
 

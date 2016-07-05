@@ -211,7 +211,7 @@ def expand_invalid_graph(validg, invalidg, dead_state):
             g.add_edge("dead_"+str(dead_edge[0]), prefix_str+"0", {"_inputs": []})
             for i in range(0, len(valid_path)-1):
                 g.add_edge(prefix_str+str(i), prefix_str+str(i+1), validg.edge[valid_path[i]][valid_path[i+1]])
-            finals_set.add(prefix_str+valid_path[-1])
+            finals_set.add(prefix_str+str(len(valid_path)-1))
 
     g.graph["finals"] = list(finals_set)
     return g
