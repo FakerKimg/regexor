@@ -107,6 +107,27 @@ def iterate_output(wf, _graph, output_path, pindex, output_str="", inputs_num=1)
     else_chars = [c for c in string.printable[:-6] if c not in _graph.graph["alphabet"]]
     #else_chars = [c for c in string.printable if c not in _graph.graph["alphabet"]]
 
+
+    if len(output_path)>100: # python iteration repeat times limititaion ????
+        sss = ""
+        for i in range(0, len(output_path)-1):
+            #possible_inputs = extract_edge_inputs((output_path[pindex], output_path[pindex+1]))
+            possible_inputs = list(_graph.edge[output_path[i]][output_path[i+1]]["_inputs"])
+            if len(possible_inputs)==0:
+                assert("dead_" in output_path[i])
+                assert("valid_" in output_path[i+1])
+                continue
+
+            selected_input = random.sample(possible_inputs, 1)[0]
+            if isinstance(selected_input, anything_else_cls):
+                selected_input = random.sample(else_chars, 1)[0]
+
+            sss = sss + selected_input
+        wf.write(sss)
+        wf.write("\n")
+        return
+
+
     #possible_inputs = extract_edge_inputs((output_path[pindex], output_path[pindex+1]))
     possible_inputs = list(_graph.edge[output_path[pindex]][output_path[pindex+1]]["_inputs"])
 
@@ -127,7 +148,6 @@ def iterate_output(wf, _graph, output_path, pindex, output_str="", inputs_num=1)
     return
 
 def generate_patterns(_type, scc_type, condense_type, valid):
-<<<<<<< HEAD
     dead_state_index = {
         "tel": 2,
         "url": 1,
@@ -142,10 +162,6 @@ def generate_patterns(_type, scc_type, condense_type, valid):
 
     valid_graph, invalid_graph = fsm_graph_transition(_type)
     _graph = valid_graph if valid else expand_invalid_graph(valid_graph, invalid_graph, dead_state_index[_type])
-=======
-    valid_graph, invalid_graph = fsm_graph_transition(_type)
-    _graph = valid_graph if valid else invalid_graph
->>>>>>> stricter-and-valid-tester
     sccs, dag_edges = basic_graph_process(_graph)
     condenseg, final_sccs = basic_condenseg_process(_graph, sccs, dag_edges)
     shortest_paths = create_shortest_path(sccs)

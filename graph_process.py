@@ -171,10 +171,24 @@ def scc_process(_sccs, shortest_paths, _type="shortest"):
 
 def expand_invalid_graph(validg, invalidg, dead_state):
     g = networkx.DiGraph()
+    g.graph["dead_state"] = dead_state
     g.graph["initial"] = invalidg.graph["initial"]
     g.graph["alphabet"] = invalidg.graph["alphabet"]
 
     finals_set = set([final for final in invalidg.graph["finals"] if final!=dead_state])
+
+    # reverse validg and construct tree from final states
+    rvalidg = networkx.reverse(validg, True)
+    rtrees = []
+    for final in validg.graph["finals"]:
+        rtrees.append(networkx.bfs_tree(rvalidg, final))
+
+    simplified_validg = networkx.DiGraph()
+    for rtree in rtrees:
+        networkx.compose(simplified_validg, rtree)
+
+    networkx.reverse(simplified_validg, False)
+
 
     # copy edges and nodes from validg
     for edge in validg.edges():
@@ -193,11 +207,26 @@ def expand_invalid_graph(validg, invalidg, dead_state):
     # process the edge to dead state
     for dead_edge in dead_edges:
         g.add_edge(dead_edge[0], "dead_"+str(dead_edge[0]), dict(invalidg.edge[dead_edge[0]][dead_edge[1]]) )
-        for enode in invalidg.edge[dead_edge[0]].keys():
+
+        enodes = invalidg.edge[dead_edge[0]].keys()
+        if len(enodes)==1:
+            assert(enodes[0]==dead_state)
+            finals_set.add("dead_"+str(dead_edge[0]))
+            continue
+
+        for enode in enodes:
             if enode==dead_state:
                 continue
             valid_node = enode if enode<dead_state else enode-1
             g.add_edge("dead_"+str(dead_edge[0]), "valid_"+str(valid_node), {"_inputs": []})
+
+    for node in validg.nodes():
+        try:
+            path = networkx.shortest_path(g, g.graph["initial"], "valid_"+str(node))
+        except: # no path from invalidg initial to node(which is in validg)
+            g.remove_node("valid_"+str(node))
+            if "valid_"+str(node) in finals_set:
+                finals_set.remove("valid_"+str(node))
 
     g.graph["finals"] = list(finals_set)
     return g
