@@ -177,25 +177,17 @@ def expand_invalid_graph(validg, invalidg, dead_state):
 
     finals_set = set([final for final in invalidg.graph["finals"] if final!=dead_state])
 
-    # reverse validg and construct tree from final states
-    rvalidg = networkx.reverse(validg, True)
-    rtrees = []
-    for final in validg.graph["finals"]:
-        rtrees.append(networkx.bfs_tree(rvalidg, final))
-
-    simplified_validg = networkx.DiGraph()
-    for rtree in rtrees:
-        networkx.compose(simplified_validg, rtree)
-
-    networkx.reverse(simplified_validg, False)
-
-
-    # copy edges and nodes from validg
-    for edge in validg.edges():
-        g.add_edge("valid_"+str(edge[0]), "valid_"+str(edge[1]), validg.edge[edge[0]][edge[1]])
-
-    for final in validg.graph["finals"]:
-        finals_set.add("valid_"+str(final))
+    # find direct path from each node in validg to finals
+    validg_direct_paths = {}
+    for node in validg.nodes():
+        for final in validg.graph["finals"]:
+            try:
+                direct_path = networkx.shortest_path(validg, node, final)
+                validg_direct_paths[node] = direct_path
+                break
+            except:
+                pass
+        assert(node in validg_direct_paths.keys())
 
     # copy edges and nodes from invalidg
     not_dead_edges = [edge for edge in invalidg.edges() if edge[1]!=dead_state]
@@ -206,27 +198,20 @@ def expand_invalid_graph(validg, invalidg, dead_state):
 
     # process the edge to dead state
     for dead_edge in dead_edges:
-        g.add_edge(dead_edge[0], "dead_"+str(dead_edge[0]), dict(invalidg.edge[dead_edge[0]][dead_edge[1]]) )
+        g.add_edge(dead_edge[0], "dead_"+str(dead_edge[0]), invalidg.edge[dead_edge[0]][dead_edge[1]])
+        finals_set.add("dead_"+str(dead_edge[0]))
 
         enodes = invalidg.edge[dead_edge[0]].keys()
-        if len(enodes)==1:
-            assert(enodes[0]==dead_state)
-            finals_set.add("dead_"+str(dead_edge[0]))
-            continue
-
         for enode in enodes:
             if enode==dead_state:
                 continue
             valid_node = enode if enode<dead_state else enode-1
-            g.add_edge("dead_"+str(dead_edge[0]), "valid_"+str(valid_node), {"_inputs": []})
-
-    for node in validg.nodes():
-        try:
-            path = networkx.shortest_path(g, g.graph["initial"], "valid_"+str(node))
-        except: # no path from invalidg initial to node(which is in validg)
-            g.remove_node("valid_"+str(node))
-            if "valid_"+str(node) in finals_set:
-                finals_set.remove("valid_"+str(node))
+            valid_path = validg_direct_paths[valid_node]
+            prefix_str = "dead_"+str(dead_edge[0])+"_"+str(valid_node)+"_"
+            g.add_edge("dead_"+str(dead_edge[0]), prefix_str+"0", {"_inputs": []})
+            for i in range(0, len(valid_path)-1):
+                g.add_edge(prefix_str+str(i), prefix_str+str(i+1), validg.edge[valid_path[i]][valid_path[i+1]])
+            finals_set.add(prefix_str+valid_path[-1])
 
     g.graph["finals"] = list(finals_set)
     return g
