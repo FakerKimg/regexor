@@ -138,12 +138,17 @@ def create_invalid_patterns(valid_pattern, origin_charclasses_parents, origin_mu
         parent_mult = origin_charclasses_parents[parent_index]
         origin_charclass = parent_mult.__dict__["multiplicand"]
 
+        _chars = list(origin_charclass.chars)
+        parent_mult.__dict__["multiplicand"] = charclass(_chars, not origin_charclass.negated)
+
+        """
         if not origin_charclass.negated:
             _chars = list(origin_charclass.chars)
             chars_str = "".join(random.sample(_chars, len(_chars)/2))
             parent_mult.__dict__["multiplicand"] = charclass(chars_str, True)
         else:
             parent_mult.__dict__["multiplicand"] = charclass("", True) # . # no false negative??????
+        """
 
         create_invalid_patterns(valid_pattern, origin_charclasses_parents, origin_multipliers_parents, parent_index+1, invalid_patterns) # muted
         parent_mult.__dict__["multiplicand"] = origin_charclass
@@ -155,6 +160,15 @@ def create_invalid_patterns(valid_pattern, origin_charclasses_parents, origin_mu
         parent_mult = origin_multipliers_parents[parent_index-len(origin_charclasses_parents)]
         origin_multiplier = parent_mult.__dict__["multiplier"]
 
+        _max = origin_multiplier.max.v
+        _min = origin_multiplier.min.v
+        if origin_multiplier.max.v==None:
+            if origin_multiplier.min.v!=1: # i have no method for {1,}, because {0,0} is not allowed
+                parent_mult.__dict__["multiplier"] = multiplier.match("{0," + str(_min-1) + "}")[0]
+        else:
+            parent_mult.__dict__["multiplier"] = multiplier.match("{" + str(_max+1) + ",}")[0]
+
+        """
         if origin_multiplier.max.v!=None:
             _max = origin_multiplier.max.v
             _min = origin_multiplier.min.v
@@ -166,6 +180,7 @@ def create_invalid_patterns(valid_pattern, origin_charclasses_parents, origin_mu
             _min = origin_multiplier.min.v
             _max = _min + 10
             parent_mult.__dict__["multiplier"] = multiplier.match("{0," + str(_max) + "}")[0]
+        """
 
         create_invalid_patterns(valid_pattern, origin_charclasses_parents, origin_multipliers_parents, parent_index+1, invalid_patterns) # muted
         parent_mult.__dict__["multiplier"] = origin_multiplier
@@ -192,15 +207,15 @@ def create_invalid_regexes(valid_regex, breach_num=5):
         pass
 
 
-    invalid_legos = []
-    create_invalid_patterns(valid_pattern, origin_charclasses_parents, origin_multipliers_parents, 0, invalid_legos)
+    inverse_legos = []
+    create_invalid_patterns(valid_pattern, origin_charclasses_parents, origin_multipliers_parents, 0, inverse_legos)
 
-    invalid_regexes = []
-    for invalid_lego in invalid_legos:
-        invalid_regexes.append(regexfsm_to_str(invalid_lego))
+    inverse_regexes = []
+    for inverse_lego in inverse_legos:
+        inverse_regexes.append(regexfsm_to_str(inverse_lego))
 
-    print "len of invalid regexes : ", len(invalid_regexes)
-    return invalid_regexes
+    print "len of inverse regexes : ", len(inverse_regexes)
+    return inverse_regexes
 
 
 def above_function_check():
