@@ -202,7 +202,7 @@ def test_once(_patterns, tester_num=5):
         csvf.write(st)
         for scc_type in scc_types:
             for condense_type in condense_types:
-                filename = input_type + "." + scc_type + "." + condense_type + ".patterns"
+                filename = input_type + "." + scc_type + "." + condense_type + ".testers"
                 shutil.copyfile("./test_patterns/"+filename, "./evaluation_patterns/" + st + "/" +filename)
                 shutil.copyfile("./test_patterns/"+input_type+".testers", "./evaluation_patterns/"+st+"/"+input_type+".testers")
 
