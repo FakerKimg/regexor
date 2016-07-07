@@ -138,12 +138,8 @@ def create_invalid_patterns(valid_pattern, origin_charclasses_parents, origin_mu
         parent_mult = origin_charclasses_parents[parent_index]
         origin_charclass = parent_mult.__dict__["multiplicand"]
 
-        if not origin_charclass.negated:
-            _chars = list(origin_charclass.chars)
-            chars_str = "".join(random.sample(_chars, len(_chars)/2))
-            parent_mult.__dict__["multiplicand"] = charclass(chars_str, True)
-        else:
-            parent_mult.__dict__["multiplicand"] = charclass("", True) # . # no false negative??????
+        _chars = list(origin_charclass.chars)
+        parent_mult.__dict__["multiplicand"] = charclass(_chars, not origin_charclass.negated)
 
         create_invalid_patterns(valid_pattern, origin_charclasses_parents, origin_multipliers_parents, parent_index+1, invalid_patterns) # muted
         parent_mult.__dict__["multiplicand"] = origin_charclass
@@ -155,17 +151,12 @@ def create_invalid_patterns(valid_pattern, origin_charclasses_parents, origin_mu
         parent_mult = origin_multipliers_parents[parent_index-len(origin_charclasses_parents)]
         origin_multiplier = parent_mult.__dict__["multiplier"]
 
-        if origin_multiplier.max.v!=None:
-            _max = origin_multiplier.max.v
-            _min = origin_multiplier.min.v
-            if _min==_max:
-                parent_mult.__dict__["multiplier"] = multiplier.match("{" + str(_min+1) + ",}")[0]
-            else:
-                parent_mult.__dict__["multiplier"] = multiplier.match("{" + str((_min+_max+1)/2) + ",}")[0]
+        _max = origin_multiplier.max.v
+        _min = origin_multiplier.min.v
+        if _max!=None:
+            parent_mult.__dict__["multiplier"] = multiplier.match("{" + str(_max+1) + ",}")[0]
         else:
-            _min = origin_multiplier.min.v
-            _max = _min + 10
-            parent_mult.__dict__["multiplier"] = multiplier.match("{0," + str(_max) + "}")[0]
+            parent_mult.__dict__["multiplier"] = multiplier.match("{0," + str(_min) + "}")[0]
 
         create_invalid_patterns(valid_pattern, origin_charclasses_parents, origin_multipliers_parents, parent_index+1, invalid_patterns) # muted
         parent_mult.__dict__["multiplier"] = origin_multiplier
