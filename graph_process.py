@@ -202,6 +202,8 @@ def expand_invalid_graph(validg, invalidg, dead_state):
         finals_set.add("dead_"+str(dead_edge[0]))
 
         enodes = invalidg.edge[dead_edge[0]].keys()
+        if dead_edge[0] not in enodes:
+            enodes.append(dead_edge[0]) # for breaches of repeat time, should it work??????????????
         for enode in enodes:
             if enode==dead_state:
                 continue

@@ -15,7 +15,6 @@ valid_regexes = {
 }
 
 
-
 # turn regexfsm.lego into str acceptable by re
 def regexfsm_to_str(_lego, for_grep=True):
     result_str = ""
@@ -133,17 +132,30 @@ def find_extensible_legos(origin_pattern):
     return origin_charclasses_parents, origin_multipliers_parents
 
 
-def create_invalid_patterns(valid_pattern, origin_charclasses_parents, origin_multipliers_parents, parent_index, invalid_patterns):
+def create_invalid_patterns(valid_pattern, origin_charclasses_parents, origin_multipliers_parents, parent_index, invalid_patterns, valid):
     if parent_index < len(origin_charclasses_parents): # deal with charclass
         parent_mult = origin_charclasses_parents[parent_index]
         origin_charclass = parent_mult.__dict__["multiplicand"]
 
         _chars = list(origin_charclass.chars)
         parent_mult.__dict__["multiplicand"] = charclass(_chars, not origin_charclass.negated)
+        if valid:
+            parent_mult.__dict__["multiplicand"] = charclass(_chars, not origin_charclass.negated)
+        else:
+            parent_mult.__dict__["multiplicand"] = charclass("", True) # . # no false negative??????
 
-        create_invalid_patterns(valid_pattern, origin_charclasses_parents, origin_multipliers_parents, parent_index+1, invalid_patterns) # muted
+        """
+        if not origin_charclass.negated:
+            _chars = list(origin_charclass.chars)
+            chars_str = "".join(random.sample(_chars, len(_chars)/2))
+            parent_mult.__dict__["multiplicand"] = charclass(chars_str, True)
+        else:
+            parent_mult.__dict__["multiplicand"] = charclass("", True) # . # no false negative??????
+        """
+
+        create_invalid_patterns(valid_pattern, origin_charclasses_parents, origin_multipliers_parents, parent_index+1, invalid_patterns, valid) # muted
         parent_mult.__dict__["multiplicand"] = origin_charclass
-        create_invalid_patterns(valid_pattern, origin_charclasses_parents, origin_multipliers_parents, parent_index+1, invalid_patterns) # non-muted
+        create_invalid_patterns(valid_pattern, origin_charclasses_parents, origin_multipliers_parents, parent_index+1, invalid_patterns, valid) # non-muted
     elif parent_index >= len(origin_charclasses_parents)+len(origin_multipliers_parents): # copy
         cp_pattern = valid_pattern.copy()
         invalid_patterns.append(cp_pattern)
@@ -157,15 +169,36 @@ def create_invalid_patterns(valid_pattern, origin_charclasses_parents, origin_mu
             parent_mult.__dict__["multiplier"] = multiplier.match("{" + str(_max+1) + ",}")[0]
         else:
             parent_mult.__dict__["multiplier"] = multiplier.match("{0," + str(_min) + "}")[0]
+        if valid:
+            if origin_multiplier.max.v!=None:
+                parent_mult.__dict__["multiplier"] = multiplier.match("{" + str(_max+1) + ",}")[0]
+            else:
+                parent_mult.__dict__["multiplier"] = multiplier.match("{0," + str(_min) + "}")[0]
+        else:
+            parent_mult.__dict__["multiplier"] = multiplier.match("*")[0]
 
-        create_invalid_patterns(valid_pattern, origin_charclasses_parents, origin_multipliers_parents, parent_index+1, invalid_patterns) # muted
+        """
+        if origin_multiplier.max.v!=None:
+            _max = origin_multiplier.max.v
+            _min = origin_multiplier.min.v
+            if _min==_max:
+                parent_mult.__dict__["multiplier"] = multiplier.match("{" + str(_min+1) + ",}")[0]
+            else:
+                parent_mult.__dict__["multiplier"] = multiplier.match("{" + str((_min+_max+1)/2) + ",}")[0]
+        else:
+            _min = origin_multiplier.min.v
+            _max = _min + 10
+            parent_mult.__dict__["multiplier"] = multiplier.match("{0," + str(_max) + "}")[0]
+        """
+
+        create_invalid_patterns(valid_pattern, origin_charclasses_parents, origin_multipliers_parents, parent_index+1, invalid_patterns, valid) # muted
         parent_mult.__dict__["multiplier"] = origin_multiplier
-        create_invalid_patterns(valid_pattern, origin_charclasses_parents, origin_multipliers_parents, parent_index+1, invalid_patterns) # non-muted
+        create_invalid_patterns(valid_pattern, origin_charclasses_parents, origin_multipliers_parents, parent_index+1, invalid_patterns, valid) # non-muted
 
     return
 
 
-def create_invalid_regexes(valid_regex, breach_num=5):
+def create_invalid_regexes(valid_regex, valid, breach_num=5):
     valid_pattern = parse(valid_regex)
     origin_charclasses_parents, origin_multipliers_parents = find_extensible_legos(valid_pattern)
 
@@ -184,7 +217,7 @@ def create_invalid_regexes(valid_regex, breach_num=5):
 
 
     invalid_legos = []
-    create_invalid_patterns(valid_pattern, origin_charclasses_parents, origin_multipliers_parents, 0, invalid_legos)
+    create_invalid_patterns(valid_pattern, origin_charclasses_parents, origin_multipliers_parents, 0, invalid_legos, valid)
 
     invalid_regexes = []
     for invalid_lego in invalid_legos:

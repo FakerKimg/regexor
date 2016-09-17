@@ -10,7 +10,7 @@ import datetime
 import shutil
 import math
 
-def test_once(tester_num=5):
+def test_once(_patterns, tester_num=5):
 
     mapping = {
         "tel": "((\((0|\+886)2\)[0-9]{4}-[0-9]{4})|((0|\+886)9[0-9]{8}))",
@@ -33,27 +33,17 @@ def test_once(tester_num=5):
             for condense_type in condense_types:
                 # generate invalid graph, generate test patterns and write into file
                 filename = input_type + "." + scc_type + "." + condense_type + ".invalids"
-                print filename + " generating patterns"
-                _ggg, output_paths = generate_patterns(input_type, scc_type, condense_type, False)
-                output_patterns(filename, _ggg, output_paths, len(output_paths))
+                output_patterns(filename, _patterns[filename]["graph"], _patterns[filename]["output_paths"], len(_patterns[filename]["output_paths"]))
 
                 # generate invalid graph, generate test patterns and write into file
                 filename = input_type + "." + scc_type + "." + condense_type + ".valids"
-                print filename + " generating patterns"
-                _ggg, output_paths = generate_patterns(input_type, scc_type, condense_type, True)
-                output_patterns(filename, _ggg, output_paths, len(output_paths))
+                output_patterns(filename, _patterns[filename]["graph"], _patterns[filename]["output_paths"], len(_patterns[filename]["output_paths"]))
 
     results = {}
     for input_type in input_types:
         # generate testers and record them
-        exploitable_regexes = create_invalid_regexes(mapping[input_type], tester_num)
-        with open("./test_patterns/"+input_type+".testers", "w") as trf:
-            for exploitable_regex in exploitable_regexes:
-                trf.write(exploitable_regex)
-                trf.write("\n")
-            trf.close()
-
-
+        test_valid_regexes = create_invalid_regexes(mapping[input_type], True, tester_num)
+        test_invalid_regexes = create_invalid_regexes(mapping[input_type], False, tester_num)
 
         # start to test each invalid pattern
         for scc_type in scc_types:
@@ -73,9 +63,9 @@ def test_once(tester_num=5):
 
                 # check whether our invalid patterns could exploit testers
                 exploit_count = 0
-                for i in range(0, len(exploitable_regexes)):
+                for i in range(0, len(test_invalid_regexes)):
                     try:
-                        cmd_line = ["grep", "-E", "\"^"+exploitable_regexes[i]+"$\"", "./test_patterns/"+filename]
+                        cmd_line = ["grep", "-E", "\"^"+test_invalid_regexes[i]+"$\"", "./test_patterns/"+filename]
                         cmd_line = [" ".join(cmd_line)]
                         result = subprocess.check_output(cmd_line, shell=True)
                         if result!="":
@@ -110,9 +100,9 @@ def test_once(tester_num=5):
                 # check whether our valid patterns could find problem testers
                 valid_cases = test_cases_not_matching.keys()
                 find_count = 0
-                for i in range(0, len(exploitable_regexes)):
+                for i in range(0, len(test_valid_regexes)):
                     try:
-                        cmd_line = ["grep", "-E", "\"^"+exploitable_regexes[i]+"$\"", "./test_patterns/"+filename]
+                        cmd_line = ["grep", "-E", "\"^"+test_valid_regexes[i]+"$\"", "./test_patterns/"+filename]
                         cmd_line = [" ".join(cmd_line)]
                         result = subprocess.check_output(cmd_line, shell=True)
                         if result!="":
@@ -175,9 +165,9 @@ def test_once(tester_num=5):
 
 
                 print filename + " statisticing"
-                print [exploit_count, find_count, len(exploitable_regexes), invalid_unused_count, valid_unused_count, len(invalid_issub_sets), len(valid_issub_sets), len(test_cases_matching.keys()),  len(test_cases_not_matching.keys())]
+                print [exploit_count, find_count, len(test_invalid_regexes), invalid_unused_count, valid_unused_count, len(invalid_issub_sets), len(valid_issub_sets), len(test_cases_matching.keys()),  len(test_cases_not_matching.keys())]
                 filename = input_type + "." + scc_type + "." + condense_type + ".patterns"
-                results[filename] = [exploit_count, find_count, len(exploitable_regexes), invalid_unused_count, valid_unused_count, len(invalid_issub_sets), len(valid_issub_sets), len(test_cases_matching.keys()),  len(test_cases_not_matching.keys())]
+                results[filename] = [exploit_count, find_count, len(test_invalid_regexes), invalid_unused_count, valid_unused_count, len(invalid_issub_sets), len(valid_issub_sets), len(test_cases_matching.keys()),  len(test_cases_not_matching.keys())]
 
 
 
@@ -207,10 +197,12 @@ def test_once(tester_num=5):
         csvf.write(st)
         for scc_type in scc_types:
             for condense_type in condense_types:
-                filename = input_type + "." + scc_type + "." + condense_type + ".patterns"
+                filename = input_type + "." + scc_type + "." + condense_type + ".invalids"
                 shutil.copyfile("./test_patterns/"+filename, "./evaluation_patterns/" + st + "/" +filename)
-                shutil.copyfile("./test_patterns/"+input_type+".testers", "./evaluation_patterns/"+st+"/"+input_type+".testers")
+                filename = input_type + "." + scc_type + "." + condense_type + ".valids"
+                shutil.copyfile("./test_patterns/"+filename, "./evaluation_patterns/" + st + "/" +filename)
 
+                filename = input_type + "." + scc_type + "." + condense_type + ".patterns"
                 for value in results[filename]:
                     csvf.write(",")
                     csvf.write(str(value))
